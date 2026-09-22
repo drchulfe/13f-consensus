@@ -43,6 +43,17 @@ def test_forward_returns_next_day_entry_and_validation():
     assert e_ok["R"][OFFSETS.index(1260)] is None
 
 
+def test_forward_returns_skips_zero_entry_price():
+    cal = pd.bdate_range("2026-03-02", periods=300)
+    spy = pd.Series(np.linspace(100, 140, len(cal)), index=cal)
+    px = np.linspace(10, 30, len(cal))
+    px[int(cal.searchsorted(pd.Timestamp("2026-05-15"), side="right"))] = 0.0     # 진입일 가격 0
+    fr = _frame(cal, px)
+    e = {"p": "2026-03-31", "tk": "AAA", "e": "2026-05-15", "imp": float(fr.loc["2026-03-31", "Close"])}
+    forward_returns([e], iter([{"AAA": fr}]), spy)
+    assert e["st"] == "nopx" and e["R"] is None
+
+
 def test_permille_trims_trailing_nulls():
     assert permille([0.0, 0.1234, None, -0.05, None, None]) == [0, 123, None, -50]
 

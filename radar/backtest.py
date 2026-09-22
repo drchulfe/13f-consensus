@@ -51,7 +51,7 @@ def forward_returns(events, frames_iter, spy):
                     e["st"] = "mismatch" if ok is False else "nopx"
                     continue
                 i0 = int(cal.searchsorted(pd.Timestamp(e["e"]), side="right"))
-                if i0 >= len(cal) or not np.isfinite(adj[i0]):
+                if i0 >= len(cal) or not np.isfinite(adj[i0]) or adj[i0] <= 0:   # 0이면 수익률이 NaN/Inf
                     continue
                 e["R"] = [round(float(adj[i0 + o] / adj[i0] - 1), 3)
                           if i0 + o < len(cal) and np.isfinite(adj[i0 + o]) else None for o in OFFSETS]
