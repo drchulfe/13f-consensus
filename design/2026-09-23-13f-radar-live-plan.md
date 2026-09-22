@@ -935,13 +935,13 @@ def P(hold, filed="2026-05-15", cik="C"):
 def test_classify_types_and_first():
     raw = {"buffett": {"periods": {
         "2026-03-31": P({"A": (100, 10), "B": (100, 10), "C": (100, 10), "E": (100, 10)}),
-        "2026-06-30": P({"A": (300, 30), "B": (50, 5), "C": (100, 10), "D": (70, 7)}, "2026-08-14")}}}
+        "2026-06-30": P({"A": (350, 35), "B": (60, 6), "C": (100, 10), "D": (70, 7)}, "2026-08-14")}}}
     out = classify(INV, raw)
     t = {s["cusip"]: s["actions"][0]["t"] for s in out["2026-06-30"]["stocks"]}
     assert t == {"A": "add", "B": "reduce", "C": "hold", "D": "new", "E": "sold"}
     assert {s["cusip"]: s["actions"][0]["t"] for s in out["2026-03-31"]["stocks"]}["A"] == "first"
     a = next(s for s in out["2026-06-30"]["stocks"] if s["cusip"] == "A")["actions"][0]
-    assert a["sh"] == 30 and a["psh"] == 10 and a["v"] == 300 and a["f"] == "2026-08-14"
+    assert a["sh"] == 35 and a["psh"] == 10 and a["v"] == 350 and a["f"] == "2026-08-14"
     f = out["2026-06-30"]["filed"][0]
     assert f["inv"] == "buffett" and f["has_prev"] is True and f["cik"] == "C"
 
