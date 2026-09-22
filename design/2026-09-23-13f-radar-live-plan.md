@@ -2309,7 +2309,7 @@ test('median, quantile, winsorized mean', () => {
   assert.equal(CORE.med([3, 1, 2]), 2); assert.equal(CORE.med([1, 2, 3, 4]), 2.5); assert.equal(CORE.med([]), null);
   near(CORE.quant([0, 10], 0.16), 1.6);
   const a = Array.from({ length: 100 }, (_, i) => i); a[99] = 1e6;
-  assert.ok(CORE.winsorMean(a) < 60);
+  assert.ok(CORE.winsorMean(a) < 200);          // 원평균 ≈ 10,049 → 1% 윈저화 ≈ 149.5
 });
 
 test('annualize and band', () => {
