@@ -2427,7 +2427,7 @@ test('niceTicks covers range with round steps', () => {
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Run: `cd ROOT && node --test tests/js/` → Expected: FAIL (`Cannot read properties of undefined` — 현 템플릿에 CORE 구간 없음)
+- [ ] **Step 2: 실패 확인** — Run: `cd ROOT && node --test tests/js/core.test.mjs` → Expected: FAIL (`Cannot read properties of undefined` — 현 템플릿에 CORE 구간 없음)
 
 - [ ] **Step 3: template.html 전체 교체** — 아래 전체 내용으로 저장.
 
@@ -3020,7 +3020,7 @@ document.body.dataset.ready='1';
 </html>
 ````
 
-- [ ] **Step 4: Node 테스트 통과 확인** — Run: `cd ROOT && node --test tests/js/` → Expected: `pass 9`, `fail 0`
+- [ ] **Step 4: Node 테스트 통과 확인** — Run: `cd ROOT && node --test tests/js/core.test.mjs` → Expected: `pass 9`, `fail 0`
 
 - [ ] **Step 5: 실데이터로 페이지 재생성(네트워크 없이)** — `$SCRATCH/rerender.py`
 
@@ -3119,7 +3119,7 @@ jobs:
       - name: Tests
         run: |
           python -m pytest -q
-          node --test tests/js/
+          node --test tests/js/core.test.mjs
       - name: Build dashboard
         env:
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
@@ -3209,7 +3209,7 @@ GitHub Actions가 매일 08:00(KST)에 새 공시·주가를 반영해 GitHub Pa
 
 - [ ] **Step 4: 전체 테스트 후 커밋**
 
-Run: `cd ROOT && ~/.venvs/13f/bin/python -m pytest -q && node --test tests/js/`
+Run: `cd ROOT && ~/.venvs/13f/bin/python -m pytest -q && node --test tests/js/core.test.mjs`
 Expected: 모두 통과.
 ```bash
 git add .github/workflows/update.yml README.md .gitignore
