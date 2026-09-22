@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edgarSubmission xmlns="http://www.sec.gov/edgar/schedule13g"><headerData><submissionType>SCHEDULE 13G</submissionType><filerInfo><filer><filerCredentials><cik>0001067983</cik></filerCredentials></filer></filerInfo></headerData>
+<formData><coverPageHeader><securitiesClassTitle>Common Stock, par value $.10</securitiesClassTitle><eventDateRequiresFilingThisStatement>06/30/2026</eventDateRequiresFilingThisStatement><issuerInfo><issuerCik>0000920760</issuerCik><issuerName>LENNAR CORPORATION</issuerName><issuerCusips><issuerCusipNumber>526057104</issuerCusipNumber></issuerCusips></issuerInfo></coverPageHeader>
+<coverPageHeaderReportingPersonDetails><reportingPersonName>Warren E. Buffett</reportingPersonName><reportingPersonBeneficiallyOwnedAggregateNumberOfShares>13111741</reportingPersonBeneficiallyOwnedAggregateNumberOfShares><classPercent>6.2</classPercent></coverPageHeaderReportingPersonDetails>
+<coverPageHeaderReportingPersonDetails><reportingPersonName>Berkshire Hathaway Inc.</reportingPersonName><reportingPersonBeneficiallyOwnedAggregateNumberOfShares>13111741</reportingPersonBeneficiallyOwnedAggregateNumberOfShares><classPercent>6.2</classPercent></coverPageHeaderReportingPersonDetails>
+</formData></edgarSubmission>

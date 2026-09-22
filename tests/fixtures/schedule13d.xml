@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edgarSubmission xmlns="http://www.sec.gov/edgar/schedule13D"><headerData><submissionType>SCHEDULE 13D/A</submissionType></headerData>
+<formData><coverPageHeader><amendmentNo>81</amendmentNo><securitiesClassTitle>Class A Common Stock</securitiesClassTitle><dateOfEvent>07/14/2026</dateOfEvent><issuerInfo><issuerCIK>0001067983</issuerCIK><issuerCusips><issuerCusipNumber>084670108</issuerCusipNumber></issuerCusips><issuerName>Berkshire Hathaway Inc.</issuerName></issuerInfo></coverPageHeader>
+<reportingPersons><reportingPersonInfo><reportingPersonName>Warren E. Buffett</reportingPersonName><aggregateAmountOwned>188290</aggregateAmountOwned><percentOfClass>38.2</percentOfClass></reportingPersonInfo></reportingPersons></formData></edgarSubmission>
