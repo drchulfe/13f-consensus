@@ -1824,6 +1824,18 @@ def test_parse_and_summarize_form4():
     assert pick_symbol(d["symbols"], "Class B Common Stock") == "LEN.B"
 
 
+def test_summarize_form4_splits_share_classes():
+    d = {"issuer_cik": "0000920760", "name": "LENNAR", "symbols": "LEN, LEN.B",
+         "tx": [{"code": "P", "date": "2026-09-17", "title": "Class A Common Stock", "sh": 100.0, "px": 80.0, "post": 900.0},
+                {"code": "P", "date": "2026-09-18", "title": "Class B Common Stock", "sh": 50.0, "px": 70.0, "post": 500.0},
+                {"code": "P", "date": "2026-09-19", "title": "Class A Common Stock", "sh": 100.0, "px": 82.0, "post": 1000.0}]}
+    rows = summarize_form4(d)
+    assert [(r["title"], r["sh"], r["post"]) for r in rows] == [
+        ("Class A Common Stock", 200.0, 1000.0), ("Class B Common Stock", 50.0, 500.0)]
+    assert rows[0]["px"] == 81.0
+    assert pick_symbol(d["symbols"], rows[0]["title"]) == "LEN" and pick_symbol(d["symbols"], rows[1]["title"]) == "LEN.B"
+
+
 def test_summarize_form4_uses_last_same_day_transaction_for_post():
     d = {"issuer_cik": "0000920760", "name": "X", "symbols": "LEN",
          "tx": [{"code": "P", "date": "2026-09-18", "title": "COM", "sh": 100.0, "px": 10.0, "post": 1100.0},
@@ -1910,16 +1922,20 @@ def parse_form4(xml_bytes):
 
 
 def summarize_form4(d):
-    """P(장내매수)·S(장내매도)를 코드별로 합산(가중평균가, 마지막 거래 후 보유)."""
+    """P(장내매수)·S(장내매도)를 증권 종류(클래스)별로 합산(가중평균가, 마지막 거래 후 보유).
+    한 공시에 Class A·B가 섞여 오므로 종류를 합치면 주식수·티커·보유량이 모두 틀어진다."""
     res = []
     for code, kind in (("P", "buy"), ("S", "sell")):
-        tx = [t for t in d["tx"] if t["code"] == code and t["sh"] > 0]
-        if not tx:
-            continue
-        sh = sum(t["sh"] for t in tx)
-        last = max(enumerate(tx), key=lambda p: (p[1]["date"], p[0]))[1]   # 같은 날 여러 건이면 문서 순서상 마지막
-        res.append({"kind": kind, "sh": sh, "px": round(sum(t["sh"] * t["px"] for t in tx) / sh, 4),
-                    "post": last["post"], "date": last["date"], "title": last["title"]})
+        titles = []
+        for t in d["tx"]:
+            if t["code"] == code and t["sh"] > 0 and t["title"] not in titles:
+                titles.append(t["title"])
+        for title in titles:
+            tx = [t for t in d["tx"] if t["code"] == code and t["sh"] > 0 and t["title"] == title]
+            sh = sum(t["sh"] for t in tx)
+            last = max(enumerate(tx), key=lambda p: (p[1]["date"], p[0]))[1]   # 같은 날 여러 건이면 문서 순서상 마지막
+            res.append({"kind": kind, "sh": sh, "px": round(sum(t["sh"] * t["px"] for t in tx) / sh, 4),
+                        "post": last["post"], "date": last["date"], "title": title})
     return res
 
 
@@ -1984,7 +2000,7 @@ def recent_filings(sec, inv_subs, own, today, days=FILINGS_DAYS, limit=300):
     return out[:limit]
 ```
 
-- [ ] **Step 5: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q tests/test_filings.py` → Expected: `4 passed`
+- [ ] **Step 5: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q tests/test_filings.py` → Expected: `5 passed`
 
 - [ ] **Step 6: 커밋**
 ```bash
@@ -2218,7 +2234,7 @@ if __name__ == "__main__":
 }
 ```
 
-- [ ] **Step 4: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q` → Expected: `52 passed`, 실패 0
+- [ ] **Step 4: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q` → Expected: `53 passed`, 실패 0
 
 - [ ] **Step 5: 커밋**
 ```bash
