@@ -1824,6 +1824,14 @@ def test_parse_and_summarize_form4():
     assert pick_symbol(d["symbols"], "Class B Common Stock") == "LEN.B"
 
 
+def test_summarize_form4_uses_last_same_day_transaction_for_post():
+    d = {"issuer_cik": "0000920760", "name": "X", "symbols": "LEN",
+         "tx": [{"code": "P", "date": "2026-09-18", "title": "COM", "sh": 100.0, "px": 10.0, "post": 1100.0},
+                {"code": "P", "date": "2026-09-18", "title": "COM", "sh": 100.0, "px": 12.0, "post": 1300.0}]}
+    s = summarize_form4(d)[0]
+    assert s["post"] == 1300.0 and s["sh"] == 200.0 and s["px"] == 11.0
+
+
 def test_parse_schedule13g_and_13d():
     g = parse_schedule13((FX / "schedule13g.xml").read_bytes())
     assert g == {"issuer_cik": "0000920760", "name": "LENNAR CORPORATION", "cusip": "526057104", "form": "SCHEDULE 13G",
@@ -1909,7 +1917,7 @@ def summarize_form4(d):
         if not tx:
             continue
         sh = sum(t["sh"] for t in tx)
-        last = max(tx, key=lambda t: t["date"])
+        last = max(enumerate(tx), key=lambda p: (p[1]["date"], p[0]))[1]   # 같은 날 여러 건이면 문서 순서상 마지막
         res.append({"kind": kind, "sh": sh, "px": round(sum(t["sh"] * t["px"] for t in tx) / sh, 4),
                     "post": last["post"], "date": last["date"], "title": last["title"]})
     return res
@@ -1976,7 +1984,7 @@ def recent_filings(sec, inv_subs, own, today, days=FILINGS_DAYS, limit=300):
     return out[:limit]
 ```
 
-- [ ] **Step 5: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q tests/test_filings.py` → Expected: `3 passed`
+- [ ] **Step 5: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q tests/test_filings.py` → Expected: `4 passed`
 
 - [ ] **Step 6: 커밋**
 ```bash
@@ -2210,7 +2218,7 @@ if __name__ == "__main__":
 }
 ```
 
-- [ ] **Step 4: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q` → Expected: `51 passed`, 실패 0
+- [ ] **Step 4: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q` → Expected: `52 passed`, 실패 0
 
 - [ ] **Step 5: 커밋**
 ```bash

@@ -142,7 +142,7 @@ periods:{ "YYYY-MM-DD": {
            px:{last,d,el,since,vol,hi52,lo52,ok,vwap,qlo,qhi,prem,krw}|null,
            an:{mean,median,n,rec,d}|null}] } },
 bt:{built,K,H,O,stats:{total,nopx,mismatch,used},ev:[...],spy:[...]}|null,
-filings:[{d,inv,form,kind,tk,name,cusip,sh,px,val,pct,post,acc,cik}],
+filings:[{d,inv,form,kind,tk,name,cusip,sh,px,val,pct,post,td,acc,cik}],   (td = 거래일/사건일)
 sanity:{filings,total_mismatch,count_mismatch,validated,unvalidated}
 ```
 목표 크기: 페이지 8MB 이하. 첫 실행 후 실측해 넘으면 표시 분기 종목·이벤트 필드를 더 줄인다.
