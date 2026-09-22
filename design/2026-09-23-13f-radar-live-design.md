@@ -40,7 +40,7 @@ GitHub Actions (매일 23:00 UTC = 08:00 KST)
        ├─ radar/backtest.py  과거 시그널 이벤트, 청크 단위 선행수익률, 가격 검증
        ├─ radar/filings.py   Form 4·13D·13G 최근 90일 파싱
        └─ 출력: docs/data.json, docs/index.html(template.html + 데이터 내장)
-  └─ docs/ data/ 변경분 커밋 → GitHub Pages(main /docs) 게시
+  └─ data/ 변경분 커밋 → docs/를 Pages 아티팩트로 배포(docs/는 커밋하지 않음 — 매일 수 MB 커밋으로 저장소가 비대해지는 것 방지)
 ```
 
 - `build.py`는 순서만 조율하는 얇은 진입점이 된다. 각 모듈은 하나의 책임과 좁은 함수 인터페이스를 갖고, 네트워크 호출은
@@ -117,7 +117,7 @@ GitHub Actions (매일 23:00 UTC = 08:00 KST)
 - 진입일 e = 매도 아닌 행들의 공시일 중 가장 늦은 날. 매수가 = e **다음** 거래일 수정종가.
 - 오프셋 = {k+h | k∈{0,21,63,126}, h∈{5,21,252,756,1260}} ∪ {0,21,63,126} 거래일의 누적수익률 R, 같은 구간 SPY 수익률 S.
 - 가격 검증 통과 이벤트만 사용. 통계: 전체/가격없음/검증실패/사용 건수.
-- 저장 형식(크기 절감): `ev = [분기, 티커, [[투자자, "n"|"a"], …], 보유자수, R[], spy인덱스]`, `spy = [S[], …]`(진입일별 1개).
+- 저장 형식(크기 절감): `P`(분기 목록)·`I`(투자자 id 목록)를 두고 `ev = [P인덱스, 티커, [투자자인덱스×2+신규여부], 보유자수, R(퍼밀 정수, 뒤쪽 null 제거), spy인덱스]`, `spy = [S(퍼밀), …]`(진입일별 1개). 화면에서 풀어서 사용.
 - 전체 재계산: 캐시 없음, 일요일(UTC), 또는 `FULL_BACKTEST=1`. 그 외 날은 캐시 사용.
 
 ### 4.9 수시 공시 (`radar/filings.py`)
@@ -146,6 +146,7 @@ filings:[{d,inv,form,kind,tk,name,cusip,sh,px,val,pct,post,acc,cik}],
 sanity:{filings,total_mismatch,count_mismatch,validated,unvalidated}
 ```
 목표 크기: 페이지 8MB 이하. 첫 실행 후 실측해 넘으면 표시 분기 종목·이벤트 필드를 더 줄인다.
+`docs/data.json`은 로컬 확인용으로만 만들고 커밋하지 않는다.
 
 ## 6. 기대수익 정의 ("지금 사면")
 - 표본: 선택 분기보다 **이전** 분기의 이벤트 중 현재 필터(앵커·동시 투자 기준·최소 인원·신규만)를 만족하는 것.
@@ -173,7 +174,8 @@ sanity:{filings,total_mismatch,count_mismatch,validated,unvalidated}
   투자자별 변화 표(공시 원문 링크 포함).
 - 새 카드: **전략 트랙레코드**(인라인 SVG 선 그래프 + 요약 + 코호트 표), **수시 공시(최근 90일)**(전체/매수/매도/5%+ 필터).
 - 투자자 표: 상태(inactive·자동 추적·CIK 불일치·NT 메모).
-- 차트는 dataviz 가이드에 맞춰 작성(라이트/다크, 접근성).
+- 차트는 dataviz 가이드에 맞춰 작성(라이트/다크, 접근성). 색: 전략 `#2a78d6`/다크 `#3987e5`, S&P500 `#1baf7a`/다크 `#199e70`
+  (검증기 통과, 라이트 aqua 대비 2.82는 직접 라벨+분기별 표로 보완). 범례 항상 표시, 끝점 직접 라벨, 크로스헤어 툴팁, 키보드 이동.
 
 ## 9. 오류 처리
 - 투자자 단위 오류는 기록하고 계속 진행(`status: "error: …"`).
@@ -193,8 +195,9 @@ sanity:{filings,total_mismatch,count_mismatch,validated,unvalidated}
 1. 로컬(WSL)에서 첫 전체 수집 실행 → 검증 → `data/`(캐시·매핑·백테스트)와 `docs/`를 커밋.
 2. 사용자가 GitHub에 빈 저장소(Public)를 만들고, 첫 push 때 Windows Git Credential Manager 브라우저 로그인 1회.
 3. 저장소 설정: Actions Variable `SEC_USER_AGENT = 13F-Consensus drchulfe@gmail.com`, (선택) Secret `OPENFIGI_API_KEY`,
-   Pages = main 브랜치 `/docs`.
-4. 워크플로: Python 3.12, pip 캐시, `requirements.txt` 설치, 매일 23:00 UTC 실행 + 수동 실행, 변경분만 커밋, 60분 제한.
+   Pages Source = **GitHub Actions**.
+4. 워크플로: Python 3.12, pip 캐시, 테스트(pytest·Node) 통과 후 빌드, 매일 23:00 UTC + 수동 실행, `data/` 변경분 커밋,
+   `docs/`는 `upload-pages-artifact`→`deploy-pages`로 배포, 60분 제한. 빌드가 실패하면 배포 단계가 돌지 않아 이전 페이지가 유지된다.
 5. 첫 원격 실행을 수동으로 돌려 성공과 페이지 갱신을 확인.
 - 매일 실행 시간: 증분 수집 수 분, 일요일 전체 백테스트 15~25분 예상.
 
