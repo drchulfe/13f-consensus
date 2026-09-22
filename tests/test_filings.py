@@ -19,6 +19,18 @@ def test_parse_and_summarize_form4():
     assert pick_symbol(d["symbols"], "Class B Common Stock") == "LEN.B"
 
 
+def test_summarize_form4_splits_share_classes():
+    d = {"issuer_cik": "0000920760", "name": "LENNAR", "symbols": "LEN, LEN.B",
+         "tx": [{"code": "P", "date": "2026-09-17", "title": "Class A Common Stock", "sh": 100.0, "px": 80.0, "post": 900.0},
+                {"code": "P", "date": "2026-09-18", "title": "Class B Common Stock", "sh": 50.0, "px": 70.0, "post": 500.0},
+                {"code": "P", "date": "2026-09-19", "title": "Class A Common Stock", "sh": 100.0, "px": 82.0, "post": 1000.0}]}
+    rows = summarize_form4(d)
+    assert [(r["title"], r["sh"], r["post"]) for r in rows] == [
+        ("Class A Common Stock", 200.0, 1000.0), ("Class B Common Stock", 50.0, 500.0)]
+    assert rows[0]["px"] == 81.0
+    assert pick_symbol(d["symbols"], rows[0]["title"]) == "LEN" and pick_symbol(d["symbols"], rows[1]["title"]) == "LEN.B"
+
+
 def test_summarize_form4_uses_last_same_day_transaction_for_post():
     d = {"issuer_cik": "0000920760", "name": "X", "symbols": "LEN",
          "tx": [{"code": "P", "date": "2026-09-18", "title": "COM", "sh": 100.0, "px": 10.0, "post": 1100.0},

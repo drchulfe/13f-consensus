@@ -41,16 +41,20 @@ def parse_form4(xml_bytes):
 
 
 def summarize_form4(d):
-    """P(장내매수)·S(장내매도)를 코드별로 합산(가중평균가, 마지막 거래 후 보유)."""
+    """P(장내매수)·S(장내매도)를 증권 종류(클래스)별로 합산(가중평균가, 마지막 거래 후 보유).
+    한 공시에 Class A·B가 섞여 오므로 종류를 합치면 주식수·티커·보유량이 모두 틀어진다."""
     res = []
     for code, kind in (("P", "buy"), ("S", "sell")):
-        tx = [t for t in d["tx"] if t["code"] == code and t["sh"] > 0]
-        if not tx:
-            continue
-        sh = sum(t["sh"] for t in tx)
-        last = max(enumerate(tx), key=lambda p: (p[1]["date"], p[0]))[1]   # 같은 날 여러 건이면 문서 순서상 마지막
-        res.append({"kind": kind, "sh": sh, "px": round(sum(t["sh"] * t["px"] for t in tx) / sh, 4),
-                    "post": last["post"], "date": last["date"], "title": last["title"]})
+        titles = []
+        for t in d["tx"]:
+            if t["code"] == code and t["sh"] > 0 and t["title"] not in titles:
+                titles.append(t["title"])
+        for title in titles:
+            tx = [t for t in d["tx"] if t["code"] == code and t["sh"] > 0 and t["title"] == title]
+            sh = sum(t["sh"] for t in tx)
+            last = max(enumerate(tx), key=lambda p: (p[1]["date"], p[0]))[1]   # 같은 날 여러 건이면 문서 순서상 마지막
+            res.append({"kind": kind, "sh": sh, "px": round(sum(t["sh"] * t["px"] for t in tx) / sh, 4),
+                        "post": last["post"], "date": last["date"], "title": title})
     return res
 
 
