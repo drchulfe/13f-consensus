@@ -1983,20 +1983,25 @@ git commit -m "Add Form 4 and Schedule 13D/13G recent filings"
 
 **Interfaces:**
 - Consumes: 모든 `radar.*` 공개 함수.
-- Produces: `build.is_candidate(stock, tier)->bool`, `build.render_html(tpl, data)->str`, `build.collect(sec, invs, today)`, `build.main(today=None)`; 출력 `docs/index.html`, `docs/data.json` (스키마: 스펙 5절).
+- Produces: `build.is_candidate(stock, tier)->bool`, `build.finite(obj)->obj` (NaN/Inf→None), `build.render_html(tpl, data)->str`, `build.collect(sec, invs, today)`, `build.main(today=None)`; 출력 `docs/index.html`, `docs/data.json` (스키마: 스펙 5절).
 
 - [ ] **Step 1: 테스트 작성** — `tests/test_build.py`
 
 ```python
 import json
 
-from build import is_candidate, render_html
+from build import finite, is_candidate, render_html
 
 
 def test_render_html_embeds_and_escapes():
     html = render_html('<script id="data" type="application/json">/*__DATA__*/null</script>', {"x": "</script><b>"})
     assert "/*__DATA__*/null" not in html and "<\\/script>" in html
     assert json.loads(html.split(">", 1)[1].rsplit("</script>", 1)[0].replace("<\\/", "</")) == {"x": "</script><b>"}
+
+
+def test_finite_replaces_nan_and_inf():
+    out = finite({"a": float("nan"), "b": [float("inf"), 1.5], "c": {"d": float("-inf")}, "e": "x", "f": 3})
+    assert out == {"a": None, "b": [None, 1.5], "c": {"d": None}, "e": "x", "f": 3}
 
 
 def test_is_candidate():
@@ -2026,6 +2031,7 @@ SEC EDGAR 13F → 변화 분류 → 주가·가격 검증 → 백테스트·수�
 """
 import datetime as dt
 import json
+import math
 import os
 import sys
 
@@ -2049,6 +2055,17 @@ def is_candidate(s, tier):
     b = [a for a in s["actions"] if a["t"] in BUY]
     h = [a for a in s["actions"] if a["t"] in HOLD]
     return len(b) >= 2 or (any(tier.get(a["inv"]) == "A" for a in b) and len(h) >= 2)
+
+
+def finite(o):
+    """NaN·Infinity가 JSON에 들어가면 페이지 전체가 깨지므로 None으로 바꾼다."""
+    if isinstance(o, float):
+        return o if math.isfinite(o) else None
+    if isinstance(o, dict):
+        return {k: finite(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [finite(v) for v in o]
+    return o
 
 
 def render_html(tpl, data):
@@ -2131,9 +2148,9 @@ def main(today=None):
     pxs = [s.get("px") for P in show.values() for s in P["stocks"] if s.get("tk")]
     san.update(validated=sum(1 for p in pxs if p and p["ok"]), unvalidated=sum(1 for p in pxs if p and p["ok"] is False),
                noprice=sum(1 for p in pxs if not p))
-    data = {"generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-            "price_date": dm["price_date"], "fx": fx, "investors": meta, "periods": show,
-            "bt": bt, "filings": filings, "sanity": san}
+    data = finite({"generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+                   "price_date": dm["price_date"], "fx": fx, "investors": meta, "periods": show,
+                   "bt": bt, "filings": filings, "sanity": san})
     C.OUT.mkdir(exist_ok=True)
     (C.OUT / "data.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     html = render_html(C.TEMPLATE.read_text(encoding="utf-8"), data)
@@ -2182,7 +2199,7 @@ if __name__ == "__main__":
 }
 ```
 
-- [ ] **Step 4: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q` → Expected: `49 passed`, 실패 0
+- [ ] **Step 4: 통과 확인** — Run: `~/.venvs/13f/bin/python -m pytest -q` → Expected: `50 passed`, 실패 0
 
 - [ ] **Step 5: 커밋**
 ```bash
