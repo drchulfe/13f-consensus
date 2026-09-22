@@ -48,7 +48,7 @@ def summarize_form4(d):
         if not tx:
             continue
         sh = sum(t["sh"] for t in tx)
-        last = max(tx, key=lambda t: t["date"])
+        last = max(enumerate(tx), key=lambda p: (p[1]["date"], p[0]))[1]   # 같은 날 여러 건이면 문서 순서상 마지막
         res.append({"kind": kind, "sh": sh, "px": round(sum(t["sh"] * t["px"] for t in tx) / sh, 4),
                     "post": last["post"], "date": last["date"], "title": last["title"]})
     return res

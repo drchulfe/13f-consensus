@@ -19,6 +19,14 @@ def test_parse_and_summarize_form4():
     assert pick_symbol(d["symbols"], "Class B Common Stock") == "LEN.B"
 
 
+def test_summarize_form4_uses_last_same_day_transaction_for_post():
+    d = {"issuer_cik": "0000920760", "name": "X", "symbols": "LEN",
+         "tx": [{"code": "P", "date": "2026-09-18", "title": "COM", "sh": 100.0, "px": 10.0, "post": 1100.0},
+                {"code": "P", "date": "2026-09-18", "title": "COM", "sh": 100.0, "px": 12.0, "post": 1300.0}]}
+    s = summarize_form4(d)[0]
+    assert s["post"] == 1300.0 and s["sh"] == 200.0 and s["px"] == 11.0
+
+
 def test_parse_schedule13g_and_13d():
     g = parse_schedule13((FX / "schedule13g.xml").read_bytes())
     assert g == {"issuer_cik": "0000920760", "name": "LENNAR CORPORATION", "cusip": "526057104", "form": "SCHEDULE 13G",
