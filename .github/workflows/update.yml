@@ -1,0 +1,29 @@
+name: update-13f
+on:
+  schedule:
+    - cron: "0 23 * * *"     # 매일 08:00 KST (전날 미 동부 저녁 공시분까지 반영)
+  workflow_dispatch: {}       # Actions 탭에서 수동 실행
+permissions:
+  contents: write
+concurrency: { group: update-13f, cancel-in-progress: false }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120      # 첫 실행은 2013년~ 전체 13F·주가 수집으로 오래 걸림
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests pandas numpy yfinance
+      - name: Build dashboard
+        env:
+          SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+          OPENFIGI_API_KEY: ${{ secrets.OPENFIGI_API_KEY }}
+        run: python build.py
+      - name: Commit if changed
+        run: |
+          git config user.name  "13f-bot"
+          git config user.email "13f-bot@users.noreply.github.com"
+          git add docs data
+          git diff --cached --quiet || git commit -m "13F update $(date -u +%F)"
+          git push
