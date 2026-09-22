@@ -53,7 +53,7 @@ def classify(invs, raw):
                 s["actions"].append({"inv": inv["id"], "t": t, "sh": round(sh), "psh": round(psh), "v": round(v),
                                      "w": round(v / total * 100, 3), "f": (h or {}).get("f", cur["last_filed"])})
         for s in stocks.values():
-            s["split"] = detect_split(s["actions"]) if len(s["actions"]) >= 2 else None
+            s["split"] = detect_split(s["actions"])
             if s["split"]:                                        # 분할 후보: 원래 분류는 t0에 보관(주가로 확인)
                 for a in s["actions"]:
                     if a["t"] in ("add", "reduce"):
