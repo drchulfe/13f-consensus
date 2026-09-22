@@ -1,29 +1,52 @@
 name: update-13f
 on:
   schedule:
-    - cron: "0 23 * * *"     # 매일 08:00 KST (전날 미 동부 저녁 공시분까지 반영)
-  workflow_dispatch: {}       # Actions 탭에서 수동 실행
+    - cron: "0 23 * * *"     # 매일 08:00 KST (미 동부 전날 장 마감·공시 반영)
+  workflow_dispatch:
+    inputs:
+      full_backtest:
+        description: "백테스트 전체 재계산"
+        type: boolean
+        default: false
 permissions:
   contents: write
+  pages: write
+  id-token: write
 concurrency: { group: update-13f, cancel-in-progress: false }
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120      # 첫 실행은 2013년~ 전체 13F·주가 수집으로 오래 걸림
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: pip install requests pandas numpy yfinance
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: requirements-dev.txt }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install -r requirements-dev.txt
+      - name: Tests
+        run: |
+          python -m pytest -q
+          node --test tests/js/core.test.mjs
       - name: Build dashboard
         env:
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
           OPENFIGI_API_KEY: ${{ secrets.OPENFIGI_API_KEY }}
+          FULL_BACKTEST: ${{ inputs.full_backtest && '1' || '' }}
         run: python build.py
-      - name: Commit if changed
+      - name: Commit data cache
         run: |
           git config user.name  "13f-bot"
           git config user.email "13f-bot@users.noreply.github.com"
-          git add docs data
-          git diff --cached --quiet || git commit -m "13F update $(date -u +%F)"
+          git add data
+          git diff --cached --quiet || git commit -m "13F data $(date -u +%F)"
           git push
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: docs }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
