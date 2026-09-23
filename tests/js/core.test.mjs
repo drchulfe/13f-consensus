@@ -85,3 +85,18 @@ test('niceTicks covers range with round steps', () => {
   const t = CORE.niceTicks(0.95, 1.32, 4);
   assert.ok(t[0] <= 0.95 && t[t.length - 1] >= 1.32);
 });
+
+test('recScore: 합의 40 + 가격 40 + 신선도 20, 없는 항목은 평균에서 제외', () => {
+  const mk = (n, ancN, px, an) => ({n, ancN, s: {px, an}});
+  const full = CORE.recScore(mk(5, 2, {last: 80, prem: -0.20, hi52: 133.33, el: 0, krw: 1}, {mean: 112}), true);
+  assert.equal(full.cons, 40);                 // min(30, 6*5)=30 + min(10, 5*2)=10
+  assert.equal(full.price, 40);                // 세 항목 모두 만점
+  assert.equal(full.fresh, 20);                // 수시 매수 10 + 경과 0일 10
+  assert.equal(full.score, 100);
+  const none = CORE.recScore(mk(2, 0, null, null), false);
+  assert.deepEqual([none.cons, none.price, none.fresh, none.parts], [12, 0, 0, 0]);
+  const half = CORE.recScore(mk(2, 0, {last: 100, prem: 0.0, hi52: 100, el: 126, krw: 1}, null), false);
+  assert.equal(half.parts, 2);                 // 목표가 없음 → 두 항목 평균
+  assert.equal(half.price, 10);                // (0.5 + 0) / 2 * 40
+  assert.equal(half.fresh, 0);
+});

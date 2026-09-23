@@ -122,6 +122,23 @@ a{color:var(--accent)}
 .tiles>div{background:var(--panel);padding:10px 16px;display:grid;gap:2px}
 .tiles .tv{font:600 20px/1.25 var(--sans)}
 .tiles .tv small{font:400 12px var(--sans);color:var(--ink-3);margin-left:6px}
+.pick{display:grid;grid-template-columns:28px minmax(0,1fr) 190px 110px;gap:10px 14px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-2)}
+.pick:last-child{border-bottom:0}
+.pick .rank{font:600 15px var(--mono);color:var(--ink-3);text-align:center}
+.pick .nm{font-weight:600;overflow-wrap:anywhere}
+.pick .biz{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.pick .why{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:5px;font:11.5px var(--mono);color:var(--ink-3)}
+.pick .why span{background:var(--line-2);border-radius:4px;padding:1px 6px}
+.pick .pscore{text-align:right}
+.pick .pscore b{font:600 20px var(--sans)}
+.pick .pscore small{display:block;font:400 11px var(--mono);color:var(--ink-3)}
+.pick .sbar{display:flex;gap:2px;height:4px;margin-top:4px;border-radius:2px;overflow:hidden;background:var(--line-2)}
+.pick .sbar i{display:block;height:100%}
+.pick .sbar .c1{background:var(--accent)} .pick .sbar .c2{background:var(--series-a)} .pick .sbar .c3{background:var(--series-b)}
+.pick .ppx{text-align:right;font:600 14px var(--mono)}
+.pick .ppx small{display:block;font:400 11px var(--mono);color:var(--ink-3)}
+.biz{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+@media (max-width:560px){.pick{grid-template-columns:24px minmax(0,1fr);}.pick .pscore,.pick .ppx{grid-column:2;text-align:left}.pick .sbar{max-width:200px}}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--ink-2);padding:12px 16px 0}
 .legend i,.tip i{display:inline-block;width:14px;height:2px;border-radius:1px;vertical-align:middle;margin-right:6px}
 i.ka{background:var(--series-a)} i.kb{background:var(--series-b)}
@@ -179,11 +196,17 @@ details.trd>summary{cursor:pointer;padding:10px 16px;font-size:13px;color:var(--
       <div class="seg" id="basis"><button data-v="buy">같은 분기 매수</button><button data-v="hold">보유 포함</button></div></div>
     <div class="ctl"><label for="minN">최소 투자자 수</label><select id="minN"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
     <div class="ctl"><span class="lab">옵션</span><label class="chk"><input type="checkbox" id="newOnly"> 신규매수만</label></div>
-    <div class="ctl"><label for="sort">정렬</label><select id="sort"><option value="n">동시 투자자 수</option><option value="exp">기대수익(1년)</option><option value="prem">추정 매입가보다 싼 순</option><option value="recent">최근 공시</option></select></div>
+    <div class="ctl"><label for="sort">정렬</label><select id="sort"><option value="rec">추천 점수</option><option value="n">동시 투자자 수</option><option value="exp">기대수익(1년)</option><option value="prem">추정 매입가보다 싼 순</option><option value="recent">최근 공시</option></select></div>
     <div class="ctl"><span class="lab">기대수익 표시</span><div class="seg" id="exp"><button data-v="med">중앙값</button><button data-v="mean">평균</button></div></div>
     <div class="ctl"><label for="q">검색</label><input type="search" id="q" placeholder="티커·종목명"></div>
   </div>
   <p class="rule" id="rule"></p>
+
+  <section class="card" id="pickcard">
+    <h2>지금 사기 좋은 순서 — Top 5 <span id="pickmeta"></span></h2>
+    <div id="picks"></div>
+    <div class="note" id="picknote"></div>
+  </section>
 
   <div class="grid2">
     <section class="card">
@@ -206,6 +229,7 @@ details.trd>summary{cursor:pointer;padding:10px 16px;font-size:13px;color:var(--
           <p><b>매수</b> = 직전 분기 13F 대비 신규 편입 또는 주식수 증가. 13F는 분기말 스냅샷(최대 45일 뒤 공개)이라 실제 매매 시점·가격은 알 수 없습니다.</p>
           <p><b>지금 사면 기대수익</b> = 지금 조건과 같은 과거 시그널(2013년~)에서, 이 종목처럼 공시 후 같은 기간이 지난 시점에 샀을 때 1주·1달·1년·3년·5년 뒤 수익률(배당 포함). 중앙값은 전형적인 결과, 평균은 포트폴리오 기대값에 가깝습니다. 예측이 아니라 과거 기저율입니다.</p>
           <p><b>추정 매입가</b> = 매수한 분기의 거래량 가중 평균가(VWAP). 현재가가 이보다 낮으면 그 투자자들보다 싸게 사는 셈입니다(실제 매입가는 비공개).</p>
+          <p><b>추천 점수</b>는 합의 강도·가격 매력도·신선도를 공개된 식으로 더한 기계적 점수입니다(카드 아래 계산식 참고). 좋은 회사를 고르는 안목이 아니라, 지금 조건에서 눈여겨볼 순서를 정리한 것입니다.</p>
           <p><b>수시 매수 배지</b> = 최근 90일 안에 추적 투자자의 Form 4 장내매수나 5%+ 신규 지분 공시가 있는 종목.</p>
           <p><b>티커 확인 필요</b> = 13F의 평가가격과 실제 주가가 맞지 않아 티커 매핑이 의심되는 종목. 기대수익 계산에서 빼고, 현재가는 참고용으로만 보여줍니다.</p>
           <p>주식분할(모든 보유자 주식수가 같은 배수로 변하고 실제 분할 기록이 있는 경우)은 매수에서 제외. 옵션·채권은 제외, 공매도는 13F에 나오지 않습니다.</p>
@@ -241,6 +265,20 @@ const CORE = (() => {
   const winsorMean = (a,q=0.01) => { if(!a.length) return null; const lo=quant(a,q), hi=quant(a,1-q); return a.reduce((t,x)=>t+Math.min(hi,Math.max(lo,x)),0)/a.length; };
   const annualize = (x,h) => x==null ? null : Math.pow(1+x, 252/h)-1;
   const band = (c,vol,h) => { if(c==null||!vol) return null; const sd=vol*Math.sqrt(h/252), m=Math.log(1+c); return [Math.exp(m-sd)-1, Math.exp(m+sd)-1]; };
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  // 추천 점수: 합의 강도 40 + 가격 매력도 40 + 신선도 20 (계산식은 화면에 공개한다)
+  function recScore(r, recentBuy){
+    const px = r.s.px, an = r.s.an;
+    const cons = Math.min(30, 6 * r.n) + Math.min(10, 5 * r.ancN);
+    const parts = [];
+    if(px && px.prem != null) parts.push(clamp01((0.20 - px.prem) / 0.40));              // 추정 매입가 대비 할인
+    if(px && px.hi52 && px.last) parts.push(clamp01((px.hi52 / px.last - 1) / 0.40));     // 52주 고점 대비 낙폭
+    if(an && an.mean && px && px.last) parts.push(clamp01((an.mean / px.last - 1) / 0.40)); // 애널리스트 상승여력
+    const price = parts.length ? 40 * parts.reduce((t, x) => t + x, 0) / parts.length : 0;
+    const fresh = (recentBuy ? 10 : 0) + (px ? 10 * clamp01((126 - px.el) / 105) : 0);
+    return {score: Math.round(cons + price + fresh), cons: Math.round(cons), price: Math.round(price),
+            fresh: Math.round(fresh), parts: parts.length};
+  }
   function niceTicks(lo, hi, n){
     if(!(hi>lo)) hi = lo + 1;
     const span=hi-lo, mag=Math.pow(10, Math.floor(Math.log10(span/n)));
@@ -290,7 +328,7 @@ const CORE = (() => {
     const yrs=q/4;
     return {rows, curve, q, cagr: q ? Math.pow(nav,1/yrs)-1 : null, scagr: q ? Math.pow(snav,1/yrs)-1 : null, mdd, win: q ? wins/q : null};
   }
-  return {med, quant, winsorMean, annualize, band, niceTicks, decodeBT, evCount, stats, trackRecord};
+  return {med, quant, winsorMean, annualize, band, niceTicks, decodeBT, evCount, stats, trackRecord, recScore};
 })();
 /*CORE-END*/
 
@@ -305,7 +343,7 @@ const periods = Object.keys(DATA.periods).sort().reverse();
 const activeN = DATA.investors.filter(i=>i.status==='ok').length || DATA.investors.length;
 document.getElementById('demo').hidden = !DATA.demo;
 
-let S = {win:'q', anchor:'A', basis:'buy', minN:2, newOnly:false, sort:'n', exp:'med', fk:'all', q:'', period:null};
+let S = {win:'q', anchor:'A', basis:'buy', minN:2, newOnly:false, sort:'rec', exp:'med', fk:'all', q:'', period:null};
 try{ Object.assign(S, JSON.parse(localStorage.getItem('13f-radar-v2')||'{}')); }catch(e){}
 S.q=''; S.period = periods.find(p=>DATA.periods[p].filed.length >= activeN*0.5) || periods[0];
 const save = () => { try{ const {q, period, ...keep} = S; localStorage.setItem('13f-radar-v2', JSON.stringify(keep)); }catch(e){} };
@@ -321,6 +359,8 @@ const pctChg = a => a.psh>0 ? '+'+((a.sh/a.psh-1)*100).toFixed(0)+'%' : '';
 const yahoo = tk => `https://finance.yahoo.com/quote/${encodeURIComponent(tk.replace(/[\/.]/g,'-'))}`;
 const edgarFiling = (cik, acc) => `https://www.sec.gov/Archives/edgar/data/${encodeURIComponent(parseInt(cik,10))}/${encodeURIComponent(String(acc).replace(/-/g,''))}/`;
 const premTxt = p => p==null ? '–' : (p<0 ? `<span class="pos">${(p*100).toFixed(1)}% 싸게</span>` : `<span>+${(p*100).toFixed(1)}% 비싸게</span>`);
+const bizText = s => { const b = s.biz; if(!b) return ''; return b.ko || [b.sec, b.ind].filter(Boolean).join(' · '); };
+const bizLine = s => { const t = bizText(s); return t ? `<div class="biz">${esc(t)}</div>` : ''; };
 const normTk = t => (t||'').replace(/[\/.]/g,'-').toUpperCase();
 
 function addDays(iso,n){ const d=new Date(iso+'T00:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
@@ -371,12 +411,14 @@ function compute(){
     if(q && !((s.tk||'').toLowerCase().includes(q) || s.name.toLowerCase().includes(q))) continue;
     const r={s, buyers, holders, n, ancN: anc ? buyers.filter(a=>anc.has(a.inv)).length : 0,
       val: buyers.reduce((t,a)=>t+a.v,0), last: buyers.reduce((m,a)=>a.f>m?a.f:m,'')};
-    r.X=stockExp(r); out.push(r);
+    r.X=stockExp(r);
+    r.rec = CORE.recScore(r, (recentByTk[normTk(s.tk)]||[]).some(isBuyFiling));
+    out.push(r);
   }
   const base=(a,b)=>b.n-a.n || b.ancN-a.ancN || b.val-a.val;
   const e1=r=>{ const v=r.X&&r.X.st['1y']; return v&&v.n>=10 ? expVal(v) : -Infinity; };
   const pr=r=>r.s.px&&r.s.px.prem!=null ? r.s.px.prem : Infinity;
-  const sorters={n:base, exp:(a,b)=>e1(b)-e1(a)||base(a,b), prem:(a,b)=>pr(a)-pr(b)||base(a,b), recent:(a,b)=>(a.last<b.last)-(a.last>b.last)||base(a,b)};
+  const sorters={rec:(a,b)=>b.rec.score-a.rec.score||base(a,b), n:base, exp:(a,b)=>e1(b)-e1(a)||base(a,b), prem:(a,b)=>pr(a)-pr(b)||base(a,b), recent:(a,b)=>(a.last<b.last)-(a.last>b.last)||base(a,b)};
   return out.sort(sorters[S.sort]||base);
 }
 
@@ -401,14 +443,16 @@ function rowHTML(r, anc, fl){
     return `<div class="${v.n<30?'thin':''}"><span>${HL[hk]}</span><b class="${cls(expVal(v))}">${v.n>=10 ? fp(expVal(v)) : '–'}</b></div>`; }).join('')}</div>` : '';
   return `<details class="row"><summary>
     <div class="tk">${esc(s.tk||'—')}<small>${esc(s.cusip)}</small></div>
-    <div><div class="nm">${esc(s.name)}<small>${esc(s.cls)}</small>${badge}</div><div class="chips">${chips}</div><div class="pxl">${L.join('<br>')}</div>${strip}</div>
-    <div class="score">${r.n}<small>${S.basis==='buy'?'매수':'보유'} · 보유 ${r.holders.length}명</small><small>${fmtUSD(r.val)} · ${r.last}</small></div>
+    <div><div class="nm">${esc(s.name)}<small>${esc(s.cls)}</small>${badge}</div>${bizLine(s)}<div class="chips">${chips}</div><div class="pxl">${L.join('<br>')}</div>${strip}</div>
+    <div class="score">${r.n}<small>${S.basis==='buy'?'매수':'보유'} · 보유 ${r.holders.length}명</small><small>${fmtUSD(r.val)} · ${r.last}</small><small>추천 ${r.rec.score}점</small></div>
   </summary><div class="detail">${detailHTML(r, fl)}</div></details>`;
 }
 
 function detailHTML(r, fl){
   const s=r.s, px=s.px, X=r.X;
-  let h = s.tk ? `<div class="links"><a href="${yahoo(s.tk)}" target="_blank" rel="noopener">Yahoo Finance에서 ${esc(s.tk)} 보기</a></div>` : '';
+  const b = s.biz;
+  let h = b && (b.ko || b.en) ? `<p class="cap">${esc(b.ko || '')}${b.ko && b.en ? '<br>' : ''}${esc(b.en || '')}</p>` : '';
+  h += s.tk ? `<div class="links"><a href="${yahoo(s.tk)}" target="_blank" rel="noopener">Yahoo Finance에서 ${esc(s.tk)} 보기</a></div>` : '';
   if(X){
     h += `<div class="sub">지금 사면 — 기대수익(과거 기저율)</div><table><thead><tr><th>보유기간</th><th>중앙값</th><th>평균</th><th>연환산</th><th>68% 범위</th><th>상승확률</th><th>SPY 대비</th><th>표본</th></tr></thead><tbody>${HZ.map(([hk,hd])=>{
       const v=X.st[hk], ok=v.n>=10, b=ok ? CORE.band(v.med, px&&px.vol, hd) : null;
@@ -424,8 +468,28 @@ function detailHTML(r, fl){
   return h + `<div class="sub">투자자별 변화</div><table><thead><tr><th>투자자</th><th>변화</th><th>직전 주식수</th><th>현재 주식수</th><th>평가액</th><th>비중</th><th>공시일(원문)</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
+function renderPicks(rows){
+  const el = document.getElementById('picks'), top = rows.slice(0, 5);
+  document.getElementById('pickmeta').textContent = rows.length ? `${S.period} · 조건 충족 ${rows.length}개 중` : '';
+  el.innerHTML = top.length ? top.map((r, i) => {
+    const s = r.s, px = s.px, why = [];
+    why.push(`동시 매수 ${r.n}명${r.ancN ? `(레전드 ${r.ancN}명)` : ''}`);
+    if(px && px.prem != null) why.push(px.prem <= 0 ? `추정 매입가보다 ${(-px.prem * 100).toFixed(1)}% 싸게` : `추정 매입가보다 ${(px.prem * 100).toFixed(1)}% 비싸게`);
+    if(px && px.hi52) why.push(`52주 고점 대비 ${fp(px.last / px.hi52 - 1)}`);
+    if(s.an && s.an.mean && px) why.push(`목표가 ${fp(s.an.mean / px.last - 1)}`);
+    if((recentByTk[normTk(s.tk)] || []).some(isBuyFiling)) why.push('최근 수시 매수');
+    return `<div class="pick"><div class="rank">${i + 1}</div>
+      <div class="pmain"><div class="nm">${esc(s.tk || '—')} <span class="mut">${esc(s.name)}</span></div>
+        ${bizLine(s)}<div class="why">${why.map(w => `<span>${esc(w)}</span>`).join('')}</div></div>
+      <div class="pscore"><b>${r.rec.score}</b><small>합의 ${r.rec.cons} · 가격 ${r.rec.price} · 신선 ${r.rec.fresh}</small>
+        <div class="sbar"><i class="c1" style="width:${r.rec.cons}%"></i><i class="c2" style="width:${r.rec.price}%"></i><i class="c3" style="width:${r.rec.fresh}%"></i></div></div>
+      <div class="ppx">${px ? fmtPx(px.last) : '–'}${px && px.krw ? `<small>${fmtKRW(px.krw)}</small>` : ''}</div></div>`;
+  }).join('') : '<div class="empty">조건에 맞는 종목이 없습니다.</div>';
+  document.getElementById('picknote').innerHTML = '<p><b>추천 점수 100점</b> = 합의 강도 40(같은 분기 매수 인원 6점씩·최대 30, 레전드군 매수자 5점씩·최대 10) + 가격 매력도 40(추정 매입가 대비 할인, 52주 고점 대비 낙폭, 애널리스트 목표가 상승여력 — 자료가 있는 항목만 평균) + 신선도 20(최근 90일 수시 매수 10, 공시 후 경과일 0일 10점→126일 0점). 위 조건(앵커·인원수·기간)을 바꾸면 순서도 바뀝니다. <b>기계적 계산이며 투자 권유가 아닙니다.</b></p>';
+}
 function renderList(){
   const rows=compute(), anc=anchorSet(), fl=filedOf(S.period);
+  renderPicks(rows);
   const wl={d1:`최근 공시일(${latestFilingDay()})`, d7:'최근 7일', d30:'최근 30일', q:'분기 전체'}[S.win];
   const al={buffett:'버핏(버크셔)이', A:'레전드군 1명 이상이', any:'누구든'}[S.anchor];
   document.getElementById('rule').innerHTML=`조건: <b>${S.period}</b> 분기에 <b>${al}</b> ${S.newOnly?'<b>신규</b> ':''}매수했고, ${S.basis==='buy'?'같은 분기 매수자':'매수+보유자'}가 <b>${S.minN}명 이상</b>, 매수 공시가 <b>${wl}</b>에 나온 종목`;
