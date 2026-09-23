@@ -3,8 +3,8 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from radar.prices import (analyst_targets, download, fx_krw, had_split, raw_close_on, split_factor_in,
-                          stock_metrics, validate)
+from radar.prices import (download, fx_krw, had_split, raw_close_on, split_factor_in,
+                          stock_metrics, validate, yahoo_info)
 
 
 def frame(dates, close, vol=None, splits=None):
@@ -80,17 +80,23 @@ def test_fx_krw_reads_last_close():
     assert fx_krw(dl=lambda *a, **k: (_ for _ in ()).throw(RuntimeError("x"))) is None
 
 
-def test_analyst_targets_uses_7day_cache(tmp_path):
+def test_yahoo_info_caches_profile_and_targets(tmp_path):
     class T:
         n = 0
 
         def __init__(self, t):
             T.n += 1
             self.info = {"targetMeanPrice": 80.0, "targetMedianPrice": 75.0, "numberOfAnalystOpinions": 13,
-                         "recommendationKey": "hold"}
+                         "recommendationKey": "hold", "sector": "Technology", "industry": "Semiconductors",
+                         "longBusinessSummary": "Acme designs chips. It also sells software."}
 
-    cp, today = tmp_path / "an.json", dt.date(2026, 9, 22)
-    a = analyst_targets(["LEN"], cp, today, ticker_cls=T, sleep=lambda s: None)
-    assert a["LEN"]["mean"] == 80.0 and a["LEN"]["n"] == 13 and T.n == 1
-    analyst_targets(["LEN"], cp, today + dt.timedelta(days=3), ticker_cls=T, sleep=lambda s: None)
+    cp, today = tmp_path / "info.json", dt.date(2026, 9, 22)
+    got = yahoo_info(["ACME"], cp, today, ticker_cls=T, sleep=lambda s: None)
+    assert got["ACME"]["mean"] == 80.0 and got["ACME"]["sector"] == "Technology"
+    assert got["ACME"]["industry"] == "Semiconductors" and got["ACME"]["summary"].startswith("Acme designs chips.")
     assert T.n == 1
+    yahoo_info(["ACME"], cp, today + dt.timedelta(days=3), ticker_cls=T, sleep=lambda s: None)
+    assert T.n == 1                                      # 7일 이내는 캐시 사용
+    yahoo_info(["ACME"], cp, today + dt.timedelta(days=9), ticker_cls=T, sleep=lambda s: None)
+    assert T.n == 2                                      # 만료되면 다시 받는다
+    assert yahoo_info(["ACME"], cp, today + dt.timedelta(days=9), max_age=180, ticker_cls=T, sleep=lambda s: None)["ACME"]["d"]

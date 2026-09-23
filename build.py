@@ -13,6 +13,7 @@ import math
 import os
 import sys
 
+from radar import company
 from radar import config as C
 from radar import prices
 from radar.backtest import make_events, run_backtest
@@ -113,11 +114,20 @@ def main(today=None):
     if not shown:
         sys.exit("표시할 시그널 종목이 없습니다 — 기존 페이지를 유지합니다.")
 
-    cand = sorted({yf_sym(s["tk"]) for P in show.values() for s in P["stocks"] if s.get("tk") and is_candidate(s, tier)})
-    an = prices.analyst_targets(cand, C.ANALYST_FILE, today, log=log)
+    cand, rest = set(), set()
     for P in show.values():
         for s in P["stocks"]:
-            s["an"] = an.get(yf_sym(s["tk"])) if s.get("tk") else None
+            if s.get("tk"):
+                (cand if is_candidate(s, tier) else rest).add(yf_sym(s["tk"]))
+    prices.yahoo_info(sorted(cand), C.INFO_FILE, today, max_age=7, limit=250, log=log)        # 목표가 최신화
+    info = prices.yahoo_info(sorted(rest - cand), C.INFO_FILE, today, max_age=180, limit=400, log=log)  # 설명 채우기
+    ko, (sec_ko, ind_ko) = company.load_ko(), company.load_industry()
+    for P in show.values():
+        for s in P["stocks"]:
+            t = yf_sym(s["tk"]) if s.get("tk") else None
+            i = info.get(t) if t else None
+            s["an"] = {k: i[k] for k in ("mean", "median", "n", "rec", "d")} if i and i.get("mean") else None
+            s["biz"] = company.describe(t, i, ko, sec_ko, ind_ko) if t else None
 
     full = not C.BT_FILE.exists() or today.weekday() == 6 or os.environ.get("FULL_BACKTEST") == "1"
     try:

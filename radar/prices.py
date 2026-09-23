@@ -127,29 +127,34 @@ def fx_krw(dl=None):
         return None
 
 
-def analyst_targets(tickers, cache_path, today, max_age=7, limit=250, ticker_cls=None, sleep=time.sleep, log=print):
-    """yfinance info의 애널리스트 목표가. 7일 캐시, 실행당 최대 limit개, 연속 5회 실패 시 중단."""
+def yahoo_info(tickers, cache_path, today, max_age=7, limit=250, ticker_cls=None, sleep=time.sleep, log=print):
+    """야후 종목 정보(목표가·섹터·산업·사업요약)를 캐시에 채우고 캐시 전체를 반환.
+    max_age일보다 오래된 항목만 다시 받는다(실행당 limit개, 연속 5회 실패 시 중단)."""
     ticker_cls = ticker_cls or _yf().Ticker
-    cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    cache = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.exists() else {}
 
     def fresh(e):
         return bool(e) and (today - dt.date.fromisoformat(e["d"])).days < max_age
 
+    todo = [t for t in sorted(set(tickers)) if not fresh(cache.get(t))][:limit]
     fails = 0
-    for t in [t for t in sorted(set(tickers)) if not fresh(cache.get(t))][:limit]:
+    for t in todo:
         try:
             info = ticker_cls(t).info or {}
             cache[t] = {"mean": info.get("targetMeanPrice"), "median": info.get("targetMedianPrice"),
                         "n": info.get("numberOfAnalystOpinions"), "rec": info.get("recommendationKey"),
+                        "sector": info.get("sector"), "industry": info.get("industry"),
+                        "summary": (info.get("longBusinessSummary") or "").strip()[:400],
                         "d": today.isoformat()}
             fails = 0
         except Exception as e:
             fails += 1
-            log(f"애널리스트 목표가 실패 {t}: {e}")
+            log(f"종목 정보 실패 {t}: {e}")
             if fails >= 5:
-                log("애널리스트 목표가: 연속 실패로 중단")
+                log("종목 정보: 연속 실패로 중단")
                 break
         sleep(0.4)
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    cache_path.write_text(json.dumps(cache, ensure_ascii=False, sort_keys=True))
-    return {t: cache[t] for t in tickers if cache.get(t) and cache[t].get("mean")}
+    if todo:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(json.dumps(cache, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+    return cache
