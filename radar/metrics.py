@@ -3,7 +3,7 @@ import datetime as dt
 from collections import defaultdict
 
 from .classify import entry_date
-from .prices import had_split, split_factor_in, stock_metrics
+from .prices import split_factor_in, stock_metrics
 from .tickers import yf_sym
 
 

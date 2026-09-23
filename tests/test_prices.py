@@ -3,7 +3,8 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from radar.prices import analyst_targets, download, fx_krw, had_split, raw_close_on, stock_metrics, validate
+from radar.prices import (analyst_targets, download, fx_krw, had_split, raw_close_on, split_factor_in,
+                          stock_metrics, validate)
 
 
 def frame(dates, close, vol=None, splits=None):
@@ -32,6 +33,18 @@ def test_had_split_within_quarter():
     f = frame(["2026-03-31", "2026-05-01", "2026-07-01"], [1.0, 1.0, 1.0], splits=[0, 4.0, 0])
     assert had_split(f, "2026-06-30") is True
     assert had_split(f, "2026-09-30") is False
+
+
+def test_split_factor_in_accepts_only_split_like_ratios():
+    dates = ["2026-04-01", "2026-05-01", "2026-06-01"]
+    div = frame(dates, [1.0, 1.0, 1.0], splits=[0, 1.008, 0])          # 소액 주식배당
+    spin = frame(dates, [1.0, 1.0, 1.0], splits=[0, 0.9535, 0])        # 분사 조정
+    real = frame(dates, [1.0, 1.0, 1.0], splits=[0, 4.0, 0])           # 진짜 4:1 분할
+    rev = frame(dates, [1.0, 1.0, 1.0], splits=[0, 0.1, 0])            # 1:10 역분할
+    assert split_factor_in(div, "2026-06-30") == 1.0 and had_split(div, "2026-06-30") is False
+    assert split_factor_in(spin, "2026-06-30") == 1.0 and had_split(spin, "2026-06-30") is False
+    assert split_factor_in(real, "2026-06-30") == 4.0 and had_split(real, "2026-06-30") is True
+    assert abs(split_factor_in(rev, "2026-06-30") - 0.1) < 1e-9
 
 
 def test_stock_metrics_vwap_premium_and_elapsed():

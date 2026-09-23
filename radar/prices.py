@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 
+from .classify import SPLIT_KS
 from .dates import prev_quarter, quarter_start
 
 FIELDS = ["Adj Close", "Close", "Volume", "Stock Splits"]
@@ -70,10 +71,18 @@ def validate(frame, period_end, implied):
 
 
 def split_factor_in(frame, p):
-    """분기 (직전 분기말, p] 안에 일어난 분할 비율의 곱. 없으면 1.0."""
+    """분기 (직전 분기말, p] 안의 분할 비율 곱. 분할다운 배수(SPLIT_KS나 그 역수)만 인정한다 —
+    배당·분사 조정(예: 1.008, 0.95)은 13F 주식수를 바꾸지 않으므로 1.0으로 본다."""
     s = frame["Stock Splits"].fillna(0)
     m = (s.index > pd.Timestamp(prev_quarter(p))) & (s.index <= pd.Timestamp(p)) & (s > 0)
-    return float(np.prod(s[m].to_numpy())) if m.any() else 1.0
+    if not m.any():
+        return 1.0
+    f = float(np.prod(s[m].to_numpy()))
+    for k in SPLIT_KS:
+        for kk in (float(k), 1.0 / k):
+            if abs(f / kk - 1) < 0.01:
+                return kk
+    return 1.0
 
 
 def had_split(frame, p):
