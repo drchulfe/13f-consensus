@@ -3,7 +3,7 @@ import datetime as dt
 from collections import defaultdict
 
 from .classify import entry_date
-from .prices import had_split, stock_metrics
+from .prices import had_split, split_factor_in, stock_metrics
 from .tickers import yf_sym
 
 
@@ -32,7 +32,16 @@ def display_metrics(show, tick, download_fn, fx, today, extra=(), log=print):
             if sym == "SPY":
                 price_date = close.index[-1].date().isoformat()
             for p, s in by_sym.get(sym, []):
-                if s.get("split") and not had_split(fr, p):        # 주가에 분할 없음 → 원래 분류 복원
+                k = split_factor_in(fr, p)
+                if k != 1.0:                                    # 실제 분할 → 직전 주식수를 환산해 다시 분류
+                    s["split"], s["splitk"] = None, k
+                    for a in s["actions"]:
+                        a.pop("t0", None)
+                        if a["psh"] > 0 and a["sh"] > 0:
+                            a["psh"] = round(a["psh"] * k)
+                            a["t"] = ("add" if a["sh"] > a["psh"] * 1.0001
+                                      else "reduce" if a["sh"] < a["psh"] * 0.9999 else "hold")
+                elif s.get("split"):                            # 주가에 분할 없음 → 원래 분류 복원
                     for a in s["actions"]:
                         if "t0" in a:
                             a["t"] = a.pop("t0")

@@ -36,6 +36,14 @@ def test_detect_split_single_holder_needs_exact_ratio():
     assert detect_split([{"sh": 10, "psh": 100}, {"sh": 20, "psh": 200}]) == -10
 
 
+def test_detect_split_survives_holders_who_also_traded():
+    # 20:1 분할 분기: 한 명만 정확히 20배, 나머지는 분할 후 매매까지 함
+    acts = [{"sh": 11560, "psh": 578}, {"sh": 598000, "psh": 33800}, {"sh": 1500000, "psh": 60000}]
+    assert detect_split(acts) == 20
+    # 분할이 아닌 실제 매수(1.5배·2.5배)는 분할로 보지 않는다
+    assert detect_split([{"sh": 150, "psh": 100}, {"sh": 250, "psh": 100}]) is None
+
+
 def test_buy_stocks_and_entry_date():
     P2 = {"filed": [], "stocks": [
         {"cusip": "A", "actions": [{"inv": "x", "t": "hold", "f": "2026-08-01"}]},

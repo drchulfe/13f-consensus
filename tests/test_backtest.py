@@ -74,5 +74,5 @@ def test_run_backtest_compact_encoding(tmp_path):
     assert bt["P"] == ["2026-03-31"] and bt["I"] == ["buffett", "gates"]
     e = bt["ev"][0]
     assert e[:4] == [0, "AAA", [1], 2] and e[4][0] == 0 and e[5] == 0
-    assert bt["stats"] == {"total": 1, "nopx": 0, "mismatch": 0, "used": 1}
+    assert bt["stats"] == {"total": 1, "nopx": 0, "mismatch": 0, "split": 0, "used": 1}
     assert (tmp_path / "bt.json").exists()

@@ -30,7 +30,7 @@ def map_tickers(cusips, post=requests.post, sleep=time.sleep, key=None, cache_pa
     hdr = {"Content-Type": "application/json", **({"X-OPENFIGI-APIKEY": key} if key else {})}
     for n, i in enumerate(range(0, len(todo), batch)):
         chunk = todo[i:i + batch]
-        body = [{"idType": "ID_CUSIP", "idValue": c, "exchCode": "US"} for c in chunk]
+        body = [{"idType": "ID_CINS" if c[:1].isalpha() else "ID_CUSIP", "idValue": c, "exchCode": "US"} for c in chunk]
         try:
             r = post(FIGI_URL, json=body, headers=hdr, timeout=30)
             if r.status_code == 429:

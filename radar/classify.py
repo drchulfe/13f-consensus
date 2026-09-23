@@ -1,4 +1,5 @@
 """직전 분기 대비 변화 분류와 주식분할 판정."""
+import statistics
 from collections import defaultdict
 
 from .dates import prev_quarter
@@ -9,13 +10,16 @@ SPLIT_KS = (2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50)
 
 
 def detect_split(actions):
-    """보유 지속자 주식수 비율이 모두 같은 정수배(또는 역수)면 분할. 1명이면 0.2% 이내로 정확해야 함."""
+    """보유 지속자 주식수 비율의 중앙값이 정수배(또는 역수)이고 그 배수와 정확히 맞는 보유자가 1명 이상이면 분할 후보.
+    분할 분기에 매매까지 한 보유자가 섞여도 놓치지 않는다(전원 일치 조건은 대형주에서 거의 실패)."""
     ratios = [a["sh"] / a["psh"] for a in actions if a["psh"] > 0 and a["sh"] > 0]
     if not ratios:
         return None
+    med = statistics.median(ratios)
+    tol = 0.002 if len(ratios) == 1 else 0.01
     for k in SPLIT_KS:
         for kk in (k, 1 / k):
-            if all(abs(x / kk - 1) < 0.02 for x in ratios) and (len(ratios) >= 2 or abs(ratios[0] / kk - 1) < 0.002):
+            if abs(med / kk - 1) < tol and any(abs(x / kk - 1) < 0.02 for x in ratios):
                 return k if kk >= 1 else -k
     return None
 

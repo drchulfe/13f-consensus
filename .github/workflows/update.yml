@@ -34,15 +34,17 @@ jobs:
           OPENFIGI_API_KEY: ${{ secrets.OPENFIGI_API_KEY }}
           FULL_BACKTEST: ${{ inputs.full_backtest && '1' || '' }}
         run: python build.py
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: docs }
       - name: Commit data cache
+        continue-on-error: true
         run: |
           git config user.name  "13f-bot"
           git config user.email "13f-bot@users.noreply.github.com"
           git add data
           git diff --cached --quiet || git commit -m "13F data $(date -u +%F)"
+          git pull --rebase --autostash origin ${{ github.ref_name }}
           git push
-      - uses: actions/upload-pages-artifact@v3
-        with: { path: docs }
   deploy:
     needs: build
     runs-on: ubuntu-latest

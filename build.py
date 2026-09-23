@@ -109,6 +109,9 @@ def main(today=None):
         for s in P["stocks"]:
             for a in s["actions"]:
                 a.pop("t0", None)
+    shown = sum(len(P["stocks"]) for P in show.values())
+    if not shown:
+        sys.exit("표시할 시그널 종목이 없습니다 — 기존 페이지를 유지합니다.")
 
     cand = sorted({yf_sym(s["tk"]) for P in show.values() for s in P["stocks"] if s.get("tk") and is_candidate(s, tier)})
     an = prices.analyst_targets(cand, C.ANALYST_FILE, today, log=log)

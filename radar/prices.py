@@ -69,10 +69,15 @@ def validate(frame, period_end, implied):
     return bool(0.8 <= implied / raw <= 1.25)
 
 
-def had_split(frame, p):
+def split_factor_in(frame, p):
+    """분기 (직전 분기말, p] 안에 일어난 분할 비율의 곱. 없으면 1.0."""
     s = frame["Stock Splits"].fillna(0)
     m = (s.index > pd.Timestamp(prev_quarter(p))) & (s.index <= pd.Timestamp(p)) & (s > 0)
-    return bool(m.any())
+    return float(np.prod(s[m].to_numpy())) if m.any() else 1.0
+
+
+def had_split(frame, p):
+    return split_factor_in(frame, p) != 1.0
 
 
 def _r(x, n):

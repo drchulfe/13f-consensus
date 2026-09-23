@@ -347,7 +347,7 @@ function btStats(k, bucket){
 function stockExp(r){
   if(!BT) return null;
   const px=r.s.px;
-  if(px && px.ok===false) return null;
+  if(!px || px.ok===false) return null;
   const el=px ? px.el : 0, k=BT.K.filter(x=>x<=el).pop() ?? 0, bucket=Math.min(r.n,4);
   let st=btStats(k,bucket), basis=`같은 인원(${bucket>=4?'4명+':bucket+'명'}) 시그널`, short=bucket>=4?'4명+':`${bucket}명`;
   if(st['1y'].n < 30){ st=btStats(k,null); basis='현재 조건 전체 시그널'; short='조건 전체'; }
@@ -494,7 +494,7 @@ function renderBT(){
     const ann=hd>=756 && x.n>=10 ? `<br><span class="mut">연 ${fp(CORE.annualize(x.med,hd))}</span>` : '';
     return `<tr class="${x.n<30?'thin':''}"><td>${HL[hk]}</td><td class="n">${x.n.toLocaleString()}</td><td class="n ${cls(x.med)}">${fp(x.med)}${ann}</td><td class="n ${cls(x.mean)}">${fp(x.mean)}</td><td class="n">${x.n?fp(x.p16)+' ~ '+fp(x.p84):'–'}</td><td class="n">${x.hit==null?'–':(x.hit*100).toFixed(0)+'%'}</td><td class="n ${cls(x.ex)}">${fp(x.ex)}</td></tr>`; }).join('')}</tbody>`;
   const s2=BT.stats||{};
-  note.innerHTML=`<p>${S.period} 이전 분기 시그널만 사용(미래 정보 차단). 재계산 ${esc(BT.built)}. 과거 시그널 ${(s2.total||0).toLocaleString()}건 중 주가 없음 ${(s2.nopx||0).toLocaleString()}건·티커 불일치 ${(s2.mismatch||0).toLocaleString()}건 제외 — 상장폐지 종목이 빠지므로 <b>수익률이 위로 치우칩니다(생존편향)</b>. 평균은 상·하위 1% 윈저화. 거래비용·세금·환율 미반영. 3·5년은 표본이 적고 서로 겹칩니다.</p>`;
+  note.innerHTML=`<p>${S.period} 이전 분기 시그널만 사용(미래 정보 차단). 재계산 ${esc(BT.built)}. 과거 시그널 ${(s2.total||0).toLocaleString()}건 중 주가·티커를 못 구한 ${(s2.nopx||0).toLocaleString()}건(상장폐지·해외 등록 증권 등)·가격 불일치 ${(s2.mismatch||0).toLocaleString()}건·분할 분기 ${(s2.split||0).toLocaleString()}건 제외 — 상장폐지 종목이 빠지므로 <b>수익률이 위로 치우칩니다(생존편향)</b>. 평균은 상·하위 1% 윈저화. 거래비용·세금·환율 미반영. 3·5년은 표본이 적고 서로 겹칩니다.</p>`;
 }
 
 // ---------- 트랙레코드 ----------

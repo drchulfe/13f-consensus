@@ -1,4 +1,5 @@
 """과거 시그널 이벤트 → 공시 다음 거래일 매수 기준 선행수익률(가격 검증 통과분만)."""
+import datetime as dt
 import json
 from collections import Counter, defaultdict
 
@@ -7,7 +8,7 @@ import pandas as pd
 
 from .classify import BUY, HOLD, entry_date
 from .config import BT_FILE, HORIZONS, K_GRID, OFFSETS
-from .prices import validate
+from .prices import split_factor_in, validate
 from .tickers import yf_sym
 
 
@@ -46,6 +47,9 @@ def forward_returns(events, frames_iter, spy):
                 continue
             adj = fr["Adj Close"].reindex(cal).ffill(limit=5).to_numpy(dtype=float)
             for e in evs:
+                if split_factor_in(fr, e["p"]) != 1.0:      # 분할 분기는 매수 판정을 믿을 수 없다
+                    e["st"] = "split"
+                    continue
                 ok = validate(fr, e["p"], e["imp"])
                 if ok is not True:
                     e["st"] = "mismatch" if ok is False else "nopx"
@@ -73,14 +77,15 @@ def permille(xs):
 def run_backtest(periods, tick, download_fn, today, inv_ids, full=False, bt_file=BT_FILE, log=print):
     if not full and bt_file.exists():
         return json.loads(bt_file.read_text(encoding="utf-8"))
+    old = json.loads(bt_file.read_text(encoding="utf-8")) if bt_file.exists() else None
     ev = make_events(periods, tick)
-    first = min((e["e"] for e in ev if e["e"]), default="2013-08-01")
+    first = (dt.date.fromisoformat(min((e["p"] for e in ev), default="2013-09-30")) - dt.timedelta(days=10)).isoformat()
     spy_fr = {}
     for chunk in download_fn(["SPY"], first):
         spy_fr.update(chunk)
     if "SPY" not in spy_fr:
         log("SPY 가격을 못 받아 백테스트 생략")
-        return json.loads(bt_file.read_text(encoding="utf-8")) if bt_file.exists() else None
+        return old
     spy = spy_fr["SPY"]["Adj Close"].dropna()
     spy_rows = forward_returns(ev, download_fn(sorted({yf_sym(e["tk"]) for e in ev if e["tk"]}), first), spy)
     st = Counter(e["st"] for e in ev)
@@ -89,10 +94,14 @@ def run_backtest(periods, tick, download_fn, today, inv_ids, full=False, bt_file
     P = sorted({e["p"] for e in ok})
     pi = {p: i for i, p in enumerate(P)}
     bt = {"built": today.isoformat(), "K": K_GRID, "H": HORIZONS, "O": OFFSETS, "P": P, "I": list(inv_ids),
-          "stats": {"total": len(ev), "nopx": st["nopx"], "mismatch": st["mismatch"], "used": len(ok)},
+          "stats": {"total": len(ev), "nopx": st["nopx"], "mismatch": st["mismatch"], "split": st["split"],
+                    "used": len(ok)},
           "ev": [[pi[e["p"]], e["tk"], [ii[i] * 2 + (t == "n") for i, t in e["b"]], e["hn"], permille(e["R"]), e["si"]]
                  for e in ok],
           "spy": [permille(r) for r in spy_rows]}
+    if old and bt["stats"]["used"] < 0.8 * (old.get("stats", {}).get("used") or 0):
+        log(f"백테스트 표본 급감({old['stats']['used']}→{bt['stats']['used']}) — 기존 파일 유지")
+        return old
     bt_file.parent.mkdir(parents=True, exist_ok=True)
     bt_file.write_text(json.dumps(bt, separators=(",", ":")), encoding="utf-8")
     log(f"백테스트: {bt['stats']}")
