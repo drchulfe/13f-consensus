@@ -90,11 +90,13 @@ GitHub Actions (매일 23:00 UTC = 08:00 KST)
 
 ### 4.5 변화 분류 (`radar/classify.py`)
 - 기존 규칙 유지: 정확히 직전 분기와 비교해 new/add/hold/reduce/sold, 직전 분기가 없으면 first(매수로 세지 않음).
-- 주식분할 판정 유지(보유 지속자의 주식수 비율이 모두 같은 정수배).
+- 주식분할 판정: **주가의 분할 기록이 1차 기준**이다. 13F 비율만으로는 분할 분기에 매매까지 한 보유자가 섞이면 놓치므로(전원 일치 조건은 대형주에서 거의 실패),
+  비율 기준은 '중앙값이 정수배 + 그 배수와 정확히 맞는 보유자 1명 이상'인 후보 판정으로만 쓰고, 표시 분기는 4.7의 주가 확인으로 확정한다.
 - 화면용 분기(최근 2개)에는 **매수(new/add)가 1명 이상인 종목만** 내보낸다(데이터 크기 절감). 해당 종목의 모든 투자자 행은 유지.
 
 ### 4.6 티커 매핑 (`radar/tickers.py`)
-- OpenFIGI `v3/mapping`(idType=ID_CUSIP, exchCode=US). 키 있으면 100건/요청, 없으면 10건/요청·요청 간 2.6초.
+- OpenFIGI `v3/mapping`(exchCode=US). 식별자가 숫자로 시작하면 `ID_CUSIP`, 영문자로 시작하면 **`ID_CINS`**(해외 등록 증권: Chubb·ASML·Linde 등).
+  CINS를 CUSIP으로 조회하면 전부 '없음'으로 캐시돼 대형주가 통째로 빠진다. 키 있으면 100건/요청, 없으면 10건/요청·요청 간 2.6초.
 - 결과 없음은 `""`로 캐시, 네트워크 오류는 캐시하지 않아 다음 실행에서 재시도. 캐시 `data/cusip_map.json`.
 
 ### 4.7 주가와 검증 (`radar/prices.py`, `radar/metrics.py`)
@@ -104,6 +106,9 @@ GitHub Actions (매일 23:00 UTC = 08:00 KST)
 - **가격 검증**: 분기말 p의 13F 내재가격 = Σ평가액/Σ주식수(보유 투자자 합). Yahoo 원시가격 = p 이전 마지막 거래일 Close ×
   (p 이후 모든 분할 비율의 곱). 비율이 0.8~1.25이면 통과. 실패하면 백테스트 표본에서 빼고(`mismatch`로 집계),
   화면에서는 가격 기반 수치를 숨기고 "티커 확인 필요" 표시.
+- **분할 보정**: 표시 분기 종목에 실제 분할이 있었으면(주가 분할 기록) 직전 주식수에 분할 비율을 곱해 다시 분류한다
+  (분할 위에서 진짜로 더 산 투자자는 다시 '추가'로 잡힌다). 분할이 없으면 후보 표시를 되돌린다. 과거 분기는 보정하지 않고
+  백테스트에서 분할 분기 이벤트를 제외한다(`split` 카운터).
 - 표시 종목 지표(`px`): 현재가(전일 종가)·기준일, 시그널 진입 후 경과 거래일 `el`, 진입 후 수익률(수정종가),
   최근 1년 연환산 변동성, 52주 고가·저가, 검증 결과 `ok`, **추정 매입가**(해당 분기 거래일의 종가×거래량 가중평균 VWAP,
   분기 저가·고가, 현재가의 VWAP 대비 프리미엄), 원화 가격.
@@ -134,15 +139,15 @@ GitHub Actions (매일 23:00 UTC = 08:00 KST)
 ## 5. 출력 데이터 스키마 (`docs/data.json`, 페이지에 내장)
 ```
 generated_at, price_date, fx:{krw,d}|null,
-investors:[{id,label,fund,tier,ciks,edgar_names,status,last_period,notes[]}],
+investors:[{id,label,fund,tier,ciks,edgar_names,status,last_period,notes[],followed[]}],
 periods:{ "YYYY-MM-DD": {
   filed:[{inv,cik,filed,last_filed,accs,n,aum,has_prev}],
   stocks:[{cusip,name,cls,tk,split,
            actions:[{inv,t,sh,psh,v,w,f}],
-           px:{last,d,el,since,vol,hi52,lo52,ok,vwap,qlo,qhi,prem,krw}|null,
+           px:{last,d,el,since,vol,hi52,lo52,ok,vwap,qlo,qhi,prem,krw}|null, splitk(분할 반영 비율)|없음,
            an:{mean,median,n,rec,d}|null}] } },
-bt:{built,K,H,O,stats:{total,nopx,mismatch,used},ev:[...],spy:[...]}|null,
-filings:[{d,inv,form,kind,tk,name,cusip,sh,px,val,pct,post,td,acc,cik}],   (td = 거래일/사건일)
+bt:{built,K,H,O,P,I,stats:{total,nopx,mismatch,split,used},ev:[...],spy:[...]}|null,
+filings:[{d,inv,form,kind,tk,name,cusip,sh,px,val,pct,post,td,acc,cik,now}],   (td = 거래일/사건일, now = 현재가)
 sanity:{filings,total_mismatch,count_mismatch,validated,unvalidated}
 ```
 목표 크기: 페이지 8MB 이하. 첫 실행 후 실측해 넘으면 표시 분기 종목·이벤트 필드를 더 줄인다.
@@ -179,8 +184,9 @@ sanity:{filings,total_mismatch,count_mismatch,validated,unvalidated}
 
 ## 9. 오류 처리
 - 투자자 단위 오류는 기록하고 계속 진행(`status: "error: …"`).
-- 활동 투자자의 30% 이상 실패하거나 SPY 가격을 못 받으면 **docs를 덮어쓰지 않고 종료 코드 1** → 이전 페이지 유지,
-  워크플로 실패 알림(GitHub 메일).
+- 활동 투자자의 30% 이상 실패하거나, SPY 가격을 못 받거나, **표시할 시그널 종목이 0개면** docs를 덮어쓰지 않고 종료 코드 1 →
+  이전 페이지 유지, 워크플로 실패 알림(GitHub 메일). (0개 종료 조건이 없으면 SEC 응답 형식이 바뀌었을 때 '빈 페이지'가 정상 배포된다.)
+- 백테스트 표본이 직전 파일 대비 20% 넘게 줄면 기존 `data/backtest.json`을 유지한다(부분적인 주가 수집 실패가 한 주 동안 남는 것 방지).
 - 개별 종목 가격·애널리스트·환율 실패는 해당 필드 null, 화면에서 숨김.
 
 ## 10. 테스트
