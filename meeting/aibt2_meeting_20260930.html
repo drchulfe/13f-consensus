@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>AIBT 2급 면담 자료</title>
+<style>
+@page{size:A4;margin:13mm 14mm 12mm 14mm}
+*{box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;font-size:8.9pt;line-height:1.45;color:#1a1a1a;margin:0;background:#fff}
+h1{font-size:13pt;margin:0 0 1mm}
+.sub{font-size:8.3pt;color:#555;border-bottom:1.5px solid #1a1a1a;padding-bottom:1.5mm;margin-bottom:2.5mm}
+h2{font-size:10pt;margin:3mm 0 1.2mm;padding-left:2mm;border-left:3px solid #2b4c7e}
+p{margin:0 0 1.2mm}
+ul{margin:0 0 1.2mm;padding-left:4.5mm}
+li{margin-bottom:.6mm}
+.box{border:1px solid #bbb;background:#f5f7fa;padding:1.8mm 2.5mm;margin:1.2mm 0}
+table{border-collapse:collapse;width:100%;font-size:8.3pt;margin:1mm 0}
+th,td{border-top:1px solid #ccc;border-bottom:1px solid #ccc;padding:.7mm 1.5mm;text-align:center}
+th{background:#e9edf3;font-weight:700}
+td:first-child,th:first-child{text-align:left}
+.sig{font-weight:700}
+.note{font-size:7.6pt;color:#555}
+.pb{break-before:page}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:3mm}
+b{font-weight:700}
+.warn{color:#9b2c2c;font-weight:700}
+</style></head><body>
+
+<h1>AIBT 2급 하위 영역 간 관계와 응시자 특성별 성취 차이</h1>
+<div class="sub">지도교수 면담 자료 · 2026. 9. 30. · 자료: AIBT 2급 2025년 제1회 응시자 정오 반응(N=1,115)</div>
+
+<h2>1. 연구 개요</h2>
+<p><b>핵심 논리</b>: AI 리터러시의 개념·측정 → AIBT 공식 하위 영역(인공지능·경제·경영) → 응시자 특성별 격차 → 타당한 문항설계</p>
+<ul>
+<li><b>연구문제 1</b> 인공지능(AI) 점수와 경제·경영(EB) 점수는 연령·지역을 통제한 뒤에도 얼마나 관련되는가?</li>
+<li><b>연구문제 2</b> 연령대·시험장 지역에 따른 성취 차이는 총점·AI·EB 중 어느 영역에 집중되는가?</li>
+<li><b>차별성</b> 자기보고식 척도에 편중된 기존 AI 리터러시 측정 연구(Lintner, 2024)를 실제 자격시험의 <b>객관적 정오 반응 자료</b>로 보완.</li>
+</ul>
+
+<h2>2. 이론적 배경 요약 (Ⅱ장 5개 절)</h2>
+<ul>
+<li><b>개념</b> AI 리터러시 = 작동 원리·한계 이해, 산출물의 비판적 검토, 목적에 맞는 활용, 윤리적 판단을 포괄하는 다면적 역량(Long &amp; Magerko, 2020; Ng et al., 2021; UNESCO, 2024). <b>구분</b>: 지식·활용·평가·윤리는 <i>역량 차원</i>, 인공지능·경제·경영은 AIBT 2급의 <i>공식 하위 영역</i> → 본 연구는 후자의 점수 관계를 분석.</li>
+<li><b>측정</b> 자기보고식 척도(지각된 역량·태도) / 객관적 성취검사(지식·적용 판단) / 수행 기반 평가(실제 도구 활용·문제해결). AIBT 2급 = 객관적 성취검사, AIBT 1급 = 실습형 주관식 포함(수행 기반 요소).</li>
+<li><b>하위 영역</b> 경제이해력(지식·추론)과 금융이해력(지식·행동·태도, OECD 2020)은 구별(Walstad et al., 2013; Walstad &amp; Rebeck, 2017). 경영 영역은 마케팅·재무·조직·전략의 이질적 주제 → 단일 점수 합산 가능성에 대한 신뢰도·측정학적 검토 필요.</li>
+<li><b>격차</b> 지식 격차 가설(Tichenor et al., 1970), 디지털 기술 격차(Hargittai, 2002). 단, AI 활용격차에 직접 적용은 주의, 지역 = <b>시험장 소재지</b>(거주지·학습환경 아님).</li>
+<li><b>타당도</b> 증거 중심 설계(ECD: 학생·증거·과제모형, Mislevy &amp; Haertel, 2006), 결과 타당도(Messick, 1992). 공식 출제범위를 넘는 산업·직무 전문지식이 정답을 좌우하면 구인 무관 변량 → 검사명세·내용타당도·난이도·변별도·요인구조·DIF 후속 검토 필요.</li>
+</ul>
+
+<h2>3. 분석 설계</h2>
+<div class="box">
+<b>모형 1</b> Total = β₀ + Σ연령집단 더미 + 격오지 더미 + ε<br>
+<b>모형 2</b> AI = β₀ + Σ연령집단 더미 + 격오지 더미 + β·EB + ε<br>
+<b>모형 3</b> EB = β₀ + Σ연령집단 더미 + 격오지 더미 + β·AI + ε
+</div>
+<ul>
+<li><b>연령</b> agegrp 1(20대 이하, 기준) · 2(30대) · 3(40대) · 4(50대) · 5(60대 이상)</li>
+<li><b>지역</b> 격오지 더미: 전라·제주·강원 시험장 = 1(73명), 기타 = 0(1,042명)</li>
+<li><b>추정</b> OLS, N = 1,115. 계수는 인과효과가 아닌 <b>통제된 연관성</b>으로 해석.</li>
+</ul>
+
+<h2>4. 주요 결과</h2>
+<table>
+<tr><th>변수</th><th>모형 1 · 총점</th><th>모형 2 · AI</th><th>모형 3 · EB</th></tr>
+<tr><td>상수</td><td>31.903 (.240)***</td><td>2.188 (.608)***</td><td>10.963 (.287)***</td></tr>
+<tr><td>agegrp 2 (30대)</td><td>−.029 (.325)</td><td>−.327 (.180)<sup>†</sup></td><td>.246 (.128)<sup>†</sup></td></tr>
+<tr><td>agegrp 3 (40대)</td><td>.014 (.347)</td><td>−.292 (.192)</td><td>.236 (.137)<sup>†</sup></td></tr>
+<tr><td>agegrp 4 (50대)</td><td class="sig">−.884 (.391)*</td><td class="sig">−.696 (.216)**</td><td>.197 (.155)</td></tr>
+<tr><td>agegrp 5 (60대 이상)</td><td class="sig">−2.053 (.559)***</td><td class="sig">−1.551 (.310)***</td><td>.406 (.223)<sup>†</sup></td></tr>
+<tr><td>격오지 더미</td><td class="sig">−1.144 (.490)*</td><td>−.212 (.272)</td><td>−.288 (.194)</td></tr>
+<tr><td>경제·경영 점수(EB)</td><td>–</td><td class="sig">.765 (.035)***</td><td>–</td></tr>
+<tr><td>인공지능 점수(AI)</td><td>–</td><td>–</td><td class="sig">.390 (.018)***</td></tr>
+<tr><td>R² (adj. R²)</td><td>.022 (.018)</td><td>.318 (.315)</td><td>.305 (.301)</td></tr>
+<tr><td>F</td><td>F(5,1109)=4.98***</td><td>F(6,1108)=86.24***</td><td>F(6,1108)=81.02***</td></tr>
+</table>
+<p class="note">B (SE). <sup>†</sup>p&lt;.10, *p&lt;.05, **p&lt;.01, ***p&lt;.001. 모형 1 연령집단 공동검정 F(4,1109)=5.01, p&lt;.001. 연령별 일원분산분석: 인공지능 F=7.22, 융합형 F=6.38, 단답형 F=14.32(모두 p&lt;.001) / 경제·경영 F=1.34(p=.254), 지식형 F=1.19(p=.314).</p>
+
+<div class="pb"></div>
+<h2>5. 결과 해석</h2>
+<ul>
+<li><b>총점</b> 50대(−.88점)·60대 이상(−2.05점)과 격오지(−1.14점)가 유의하게 낮음. 다만 R²=.022로 연령·지역이 설명하는 변량은 매우 작음.</li>
+<li><b>세대 격차는 AI 영역에 집중</b> EB를 통제한 AI 점수는 50대 −.70, 60대 이상 −1.55로 유의하게 낮은 반면, AI를 통제한 EB 점수에서는 연령 효과가 모두 비유의(60대 이상은 오히려 +.41, p=.070). 문항유형별로도 인공지능·단답형·융합형에서만 연령차 유의 → 고연령층의 비즈니스 경험이 EB에서 격차를 상쇄했을 <i>가능성</i>(검증되지 않은 추정).</li>
+<li><b>AI–EB 결합</b> 연령·지역 통제 후 EB 1점 ↑ → AI .765점 ↑, AI 1점 ↑ → EB .390점 ↑. 두 모형의 설명력은 약 30%로, 주된 설명력은 연령·지역이 아니라 상대 영역 점수에서 나옴.</li>
+<li><b>격오지</b> 총점에서는 유의하지만, 상대 영역 점수를 통제하면 AI·EB 모두 비유의 → 특정 영역이 아니라 전반적 수준 차이일 가능성. n=73으로 검정력 제한.</li>
+</ul>
+
+<h2>6. 교육·정책적 제언 (현 초안)</h2>
+<ul>
+<li>고연령층 맞춤 AI 교육: 핵심 용어·기본 원리·생성형 AI 조작·사례 실습의 단계적 지원.</li>
+<li>AI 기술 이해와 경제·경영 문제해결을 결합한 통합 교육과정.</li>
+<li>검사 설계·타당도 강화: 전문가 내용타당도 검토, 문항 난이도·변별도, DIF 분석 확대.</li>
+<li>후속 연구: AIBT 1급 실습형 주관식 평가에서 연령·지역 격차 추가 분석.</li>
+</ul>
+
+<h2>7. 스스로 점검한 약점 — 면담에서 여쭐 사항</h2>
+<ol style="margin:0 0 1.2mm;padding-left:4.5mm">
+<li><b>AI↔EB 상호 투입 모형</b> 모형 2·3은 서로의 점수를 설명변수로 넣은 구조라 동시성(simultaneity) 문제가 있고, 두 계수는 사실상 같은 정보. 계산: .765 × .390 = .298 → √.298 ≈ .55 = 연령·지역 통제 후 AI–EB <b>부분상관</b>. 또한 상대 점수를 통제하면 연령 계수의 의미가 "전반적 수준이 같을 때의 영역 간 상대적 강약"으로 바뀜. <br>→ 대안: ① 상대 점수 없이 AI·EB 각각 회귀(또는 SUR)해 연령 격차 크기 비교, ② 표준화 점수 차이(z<sub>AI</sub> − z<sub>EB</sub>)를 종속변수로, ③ 부분상관을 별도 보고. 어느 쪽을 본문 모형으로 할지?</li>
+<li><b>이론–분석 간 불일치</b> 이론은 경제·경영을 별도 영역으로 논의(경영 영역 합산 가능성 검토 예고)하나 분석은 EB로 합산. 이론에서 약속한 <b>영역별 신뢰도(α/ω)·요인구조</b> 결과가 아직 없음. 경제·경영 분리 분석을 추가할지?</li>
+<li><b>지역 변수 코딩</b> 발표자료에 "수도권=1"과 "격오지(전라·제주·강원)=1"이 혼재. 전라 전체(광주 포함)를 격오지로 분류하는 근거가 약하고 n=73. 수도권/비수도권 등 대안 코딩의 강건성 확인 필요.</li>
+<li><b>이론 근거의 연결</b> 지식 격차 가설은 교육수준·SES 기반인데 자료에 학력·직무경험이 없음. "경험이 격차를 상쇄"는 자료로 검증 불가 → 한계로 명시할지, 표현을 낮출지.</li>
+<li><b>종속변수 특성</b> 정답 수 기반 점수로 천장효과·이분산 가능성 → 강건 표준오차(HC3) 보고, 필요시 IRT 점수 활용. 문항유형(지식형·단답형·융합형) 구분은 Ⅱ장에 근거가 없어 보완 필요.</li>
+<li><b>분량·체계</b> 발표자료 쪽번호·순서 정리, 모든 인용 서지 원문 대조(특히 2024–2026 국내 문헌, 한국생산성본부 2026) 마무리 예정.</li>
+</ol>
+
+<h2>8. 다음 단계 (제안)</h2>
+<p>① 모형 재설계(7-1 결정 반영) → ② 영역별 신뢰도·확인적 요인분석 → ③ 지역 코딩 강건성 검정·HC3 → ④ Ⅳ장 결과·Ⅴ장 논의 집필 → ⑤ 서지 최종 대조.</p>
+</body></html>
