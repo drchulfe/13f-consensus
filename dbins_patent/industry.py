@@ -48,7 +48,9 @@ FIRMS = {
 }
 FOCAL = "DB손보"
 SVD_DIM, MAX_K = 25, 20                      # 원 논문 설정값
-MIN_SUPPORT, MIN_CONF, MIN_LIFT = 0.02, 0.2, 1.0  # 연관규칙 기준 — 실제 데이터 분포를 보고 조정
+# 연관규칙 기준 — Suh & Sohn(2015, p.730): lift > 1, confidence > 60%, 규칙당 IPC 최대 4개.
+# 원 논문에 support 기준은 명시되어 있지 않다(0 = 미적용). MIN_COUNT는 우연한 1회 동시출현을 거르는 선택 옵션.
+MIN_SUPPORT, MIN_CONF, MIN_LIFT, MAX_ITEMS, MIN_COUNT = 0.0, 0.6, 1.0, 4, 1
 C_FOCAL, C_PEER = "#eb6834", "#b4b2a9"
 STOP = {"시스템", "방법", "장치", "서버", "단말", "정보", "제공", "이용", "기반", "관련", "처리", "단계", "수행", "포함",
         "사용자", "데이터", "프로그램", "기록", "매체", "보험", "컴퓨터", "발명", "상기", "통해", "위해", "구성", "생성",
@@ -116,23 +118,38 @@ def descriptive_terms(labels, tf, vocab, m=5):
     return out
 
 
-def assoc_rules(sub, top_items):
-    """2-항목 규칙 A→B (A,B ∈ 관심 군집의 상위 10 IPC). 원 논문 식: conf=P(B|A), lift=P(A∩B)/(P(A)P(B))."""
+def assoc_rules(sub, top_items, max_items=None):
+    """관심 군집의 상위 10 IPC 사이의 연관규칙 X→Y (|X∪Y| ≤ MAX_ITEMS).
+
+    원 논문 식: support = P(X∪Y), confidence = P(Y|X), lift = confidence / P(Y).
+    '같은 융합 패턴을 표현하는 규칙은 줄였다'(p.730)에 따라 항목집합 X∪Y마다 lift(동률 시 confidence)가
+    가장 높은 규칙 하나만 남긴다.
+    """
+    max_items = max_items or MAX_ITEMS
     n = len(sub)
     if n == 0:
         return []
-    sets = sub["ipc_groups"].map(set)
-    cnt = {i: sets.map(lambda s: i in s).sum() for i in top_items}
-    rows = []
-    for a, b in itertools.permutations(top_items, 2):
-        ab = sets.map(lambda s: a in s and b in s).sum()
-        if ab == 0 or cnt[a] == 0:
+    top = set(top_items)
+    sets = [frozenset(s) & top for s in sub["ipc_groups"]]
+    cnt = Counter()
+    for s in sets:
+        for k in range(1, min(len(s), max_items) + 1):
+            cnt.update(frozenset(c) for c in itertools.combinations(sorted(s), k))
+    best = {}
+    for S, c in cnt.items():
+        if len(S) < 2 or c < MIN_COUNT or c / n < MIN_SUPPORT:
             continue
-        sup, conf = ab / n, ab / cnt[a]
-        lift = sup / ((cnt[a] / n) * (cnt[b] / n))
-        if sup >= MIN_SUPPORT and conf >= MIN_CONF and lift > MIN_LIFT:
-            rows.append({"rule": f"{a} → {b}", "count": int(ab), "support": sup, "confidence": conf, "lift": lift})
-    return rows
+        for k in range(1, len(S)):
+            for X in map(frozenset, itertools.combinations(sorted(S), k)):
+                Y = S - X
+                conf = c / cnt[X]
+                lift = conf / (cnt[Y] / n)
+                if conf > MIN_CONF and lift > MIN_LIFT:
+                    r = {"rule": f"{' + '.join(sorted(X))} → {' + '.join(sorted(Y))}", "items": len(S),
+                         "count": int(c), "support": c / n, "confidence": conf, "lift": lift}
+                    if S not in best or (lift, conf) > (best[S]["lift"], best[S]["confidence"]):
+                        best[S] = r
+    return sorted(best.values(), key=lambda r: (-r["lift"], -r["confidence"]))
 
 
 def rta(counts):
@@ -271,7 +288,8 @@ def main():
         f"## {FOCAL} RTA 상위/하위 군집",
         rta_tbl.loc[FOCAL].sort_values(ascending=False).round(2).to_frame("RTA").to_markdown()
         if FOCAL in rta_tbl.index else "(DB손보 출원 없음)", "",
-        f"## 연관규칙 {len(rules)}개 (support≥{MIN_SUPPORT}, conf≥{MIN_CONF}, lift>{MIN_LIFT})",
+        f"## 연관규칙 {len(rules)}개 (원 논문 기준: confidence>{MIN_CONF:.0%}, lift>{MIN_LIFT}, IPC≤{MAX_ITEMS}개"
+        + (f", 동시출현≥{MIN_COUNT}회" if MIN_COUNT > 1 else "") + ")",
         rules.sort_values("lift", ascending=False).head(10).round(2).to_markdown(index=False) if len(rules) else "(없음)",
     ]
     (out / "industry_summary.md").write_text("\n".join(lines), encoding="utf-8")
