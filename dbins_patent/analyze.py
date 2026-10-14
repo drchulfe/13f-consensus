@@ -185,18 +185,20 @@ def fig_yearly(df, cutoff, out):
     plt.close(fig)
 
 
-def fig_heat(table, title, fname, out, fmt="{:.0f}"):
+def fig_heat(table, title, fname, out, fmt="{:.0f}", cmap="Blues", norm=None, color_clip=None):
     t = table.drop(columns=[c for c in ("n",) if c in table.columns])
     fig, ax = plt.subplots(figsize=(1.0 + 0.9 * t.shape[1], 0.6 + 0.5 * t.shape[0]))
-    ax.imshow(t.values.astype(float), cmap="Blues", aspect="auto", vmin=0)
+    cv = t.values.astype(float) if color_clip is None else np.clip(t.values.astype(float), *color_clip)
+    ax.imshow(cv, cmap=cmap, aspect="auto", **({"norm": norm} if norm else {"vmin": 0}))
     ax.set_xticks(range(t.shape[1]), t.columns, rotation=35, ha="right", fontsize=8)
     ax.set_yticks(range(t.shape[0]), t.index, fontsize=8)
     vmax = np.nanmax(t.values.astype(float)) if t.size else 1
     for i, j in itertools.product(range(t.shape[0]), range(t.shape[1])):
         v = t.values[i, j]
         if pd.notna(v):
+            dark = abs(norm(cv[i, j]) - 0.5) > 0.35 if norm else v > vmax * 0.6
             ax.text(j, i, fmt.format(v), ha="center", va="center", fontsize=7,
-                    color="white" if v > vmax * 0.6 else "#0b0b0b")
+                    color="white" if dark else "#0b0b0b")
     ax.set_title(title, loc="left", fontsize=10)
     for s in ax.spines.values():
         s.set_visible(False)
