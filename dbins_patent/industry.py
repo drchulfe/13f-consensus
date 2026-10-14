@@ -47,6 +47,7 @@ FIRMS = {
     "NH농협": ["농협생명", "농협손해보험"],
 }
 FOCAL = "DB손보"
+MIN_FIRM_N = 9  # RTA 그림에 표시할 최소 출원 건수
 SVD_DIM, MAX_K = 25, 20                      # 원 논문 설정값
 # 연관규칙 기준 — Suh & Sohn(2015, p.730): lift > 1, confidence > 60%, 규칙당 IPC 최대 4개.
 # 원 논문에 support 기준은 명시되어 있지 않다(0 = 미적용). MIN_COUNT는 우연한 1회 동시출현을 거르는 선택 옵션.
@@ -54,7 +55,13 @@ MIN_SUPPORT, MIN_CONF, MIN_LIFT, MAX_ITEMS, MIN_COUNT = 0.0, 0.6, 1.0, 4, 1
 C_FOCAL, C_PEER = "#eb6834", "#b4b2a9"
 STOP = {"시스템", "방법", "장치", "서버", "단말", "정보", "제공", "이용", "기반", "관련", "처리", "단계", "수행", "포함",
         "사용자", "데이터", "프로그램", "기록", "매체", "보험", "컴퓨터", "발명", "상기", "통해", "위해", "구성", "생성",
-        "결정", "판단", "수신", "전송", "저장", "출력", "입력", "산출", "복수", "적어도", "하나"}
+        "결정", "판단", "수신", "전송", "저장", "출력", "입력", "산출", "복수", "적어도", "하나",
+        # 특허 문체 상투어(청구항·요약 관용구): 실제 데이터에서 문체만으로 군집이 생겨 추가
+        "판독", "실행", "가능", "경우", "전술", "과제", "측면", "획득", "동작", "완료", "요청", "과정", "결과",
+        "기준", "대응", "선택", "해결", "효과", "실시", "예시", "특징", "제어", "구비", "이상", "이하", "각각",
+        "적용", "활용", "확인", "통하", "대상", "해당", "필요", "다수", "소정", "기능", "구현", "실시예",
+        # 출원인별 명세서 문체("본 개시는", "컴퓨팅 장치", "프로세서·메모리") — 남겨두면 기술이 아니라 출원인으로 군집됨
+        "개시", "컴퓨팅", "프로세서", "메모리", "명령", "명령어", "인스트럭션", "저장매체", "모듈", "유닛"}
 
 
 def firm_of(applicant):
@@ -149,7 +156,16 @@ def assoc_rules(sub, top_items, max_items=None):
                          "count": int(c), "support": c / n, "confidence": conf, "lift": lift}
                     if S not in best or (lift, conf) > (best[S]["lift"], best[S]["confidence"]):
                         best[S] = r
-    return sorted(best.values(), key=lambda r: (-r["lift"], -r["confidence"]))
+    # 같은 융합 패턴 = 같은 특허 묶음이 뒷받침하는 규칙. 뒷받침 특허 집합(tidset)마다
+    # 항목 수가 가장 많고(동률이면 lift·confidence가 높은) 규칙 하나만 남긴다.
+    tid = {S: frozenset(i for i, t in enumerate(sets) if S <= t) for S in best}
+    closed = {}
+    for S, r in best.items():
+        key = tid[S]
+        if key not in closed or (len(S), r["lift"], r["confidence"]) > (
+                closed[key]["items"], closed[key]["lift"], closed[key]["confidence"]):
+            closed[key] = r
+    return sorted(closed.values(), key=lambda r: (-r["lift"], -r["confidence"]))
 
 
 def rta(counts):
@@ -174,14 +190,19 @@ def fig_firm_bars(s, title, fname, out, fmt="{:.0f}"):
 
 
 def main():
+    global SVD_DIM, MAX_K, MIN_COUNT
     ap = argparse.ArgumentParser()
     ap.add_argument("input")
     ap.add_argument("--asof", required=True)
     ap.add_argument("--out", default="out_industry")
     ap.add_argument("--k", type=int, default=0, help="군집 수 고정(0이면 BIC로 선택)")
+    ap.add_argument("--svd", type=int, default=SVD_DIM, help="SVD 차원(원 논문 25). 소표본이면 낮출 것")
+    ap.add_argument("--kmax", type=int, default=MAX_K, help="최대 군집 수(원 논문 20)")
+    ap.add_argument("--min-count", type=int, default=MIN_COUNT, help="연관규칙 최소 동시출현(원 논문 기준 없음=1)")
     ap.add_argument("--merge", help="군집 병합표 CSV(열: cluster,field). 원 논문처럼 유사 군집을 묶을 때 사용")
     ap.add_argument("--focus", type=int, default=4, help="연관규칙을 볼 관심 군집 수(비중 상위)")
     a = ap.parse_args()
+    SVD_DIM, MAX_K, MIN_COUNT = a.svd, a.kmax, a.min_count
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -222,7 +243,10 @@ def main():
         cluster_tbl = raw_terms.to_frame().join(cluster_tbl)
 
     # ---- 4.3 연관규칙: 전 기간 비중 상위 군집(관심분야)마다, 상위 10 IPC 사이 규칙을 기간별로
-    focus = df["cluster"].value_counts().index[: a.focus]
+    # 관심분야(원 논문 p.728): 비중이 큰 분야 + 최근 비중이 늘어난 분야
+    growth = (share[share.columns[-1]] - share[share.columns[0]]).sort_values(ascending=False)
+    big = list(df["cluster"].value_counts().index[: a.focus // 2])
+    focus = big + [c for c in growth.index if c not in big][: a.focus - len(big)]
     rules = []
     for c in focus:
         sub_c = df[df["cluster"] == c]
@@ -268,7 +292,10 @@ def main():
             xw, sheet_name="00_원자료_분류결과", index=False)
 
     fig_heat(share.T, "기간별 기술군집 비중(%) — 보험산업 전체", "figA1_cluster_share.png", out)
-    fig_heat(rta_tbl.reindex(firm_n.sum(axis=1).sort_values(ascending=False).index), "기업 × 기술군집 RTA (1 초과 = 상대 특화)",
+    # 출원이 적은 기업은 RTA가 극단값이 되므로 그림에서 제외(표에는 전부 남김). 0(출원 없음)은 빈칸 처리
+    big_firms = firm_n.sum(axis=1)[lambda s: s >= MIN_FIRM_N].sort_values(ascending=False).index
+    fig_heat(rta_tbl.reindex(big_firms).replace(0, np.nan),
+             f"기업 × 기술군집 RTA (1 초과 = 상대 특화, 출원 {MIN_FIRM_N}건 이상 기업, 빈칸 = 출원 없음)",
              "figA2_rta.png", out, fmt="{:.1f}", cmap="RdBu_r",
              norm=LogNorm(vmin=1 / 3, vmax=3), color_clip=(1 / 3, 3))  # 1(중립)을 중심으로 대칭: 1/3 ↔ 3
     fig_firm_bars(firm_n.sum(axis=1), "기업별 출원 건수 (2016–2025, 공동출원 중복계상)", "figA3_firm_n.png", out)
