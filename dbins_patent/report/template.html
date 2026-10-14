@@ -1,0 +1,258 @@
+<title>DB손해보험 특허 기술동향</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@600;700&display=swap">
+<style>
+/* 레이아웃: 단일 읽기 칼럼(약 46rem) + 넓은 표·차트만 칼럼 밖으로 확장. 특허 공보의 서지사항 표기를 차용 */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --fg: #16202b; --muted: #5a6573; --line: #d8dde3;
+  --accent: #17607a; --accent-ink: #0f4a5f; --warm: #a4532a; --other: #b9c2cc;
+  --ok: #1f7a4d; --lapsed: #8a6d1d; --wd: #6b7280;
+  --f-display: "Noto Serif KR", "Nanum Myeongjo", serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11171d; --surface: #182029; --fg: #e6eaee; --muted: #9aa5b1; --line: #2c3742;
+  --accent: #5fb3cf; --accent-ink: #8fcde2; --warm: #e0916a; --other: #4a5562;
+  --ok: #5cc493; --lapsed: #d9b75a; --wd: #9aa3ad; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11171d; --surface: #182029; --fg: #e6eaee; --muted: #9aa5b1; --line: #2c3742;
+  --accent: #5fb3cf; --accent-ink: #8fcde2; --warm: #e0916a; --other: #4a5562;
+  --ok: #5cc493; --lapsed: #d9b75a; --wd: #9aa3ad; color-scheme: dark; }
+
+body { background: var(--bg); color: var(--fg); font: 400 15.5px/1.75 var(--f-body); }
+.wrap { max-width: 60rem; margin: 0 auto; padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.prose { max-width: 46rem; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.35rem; font-weight: 700; margin-top: 3.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1.8rem; }
+p { margin: 0.8rem 0; }
+small { color: var(--muted); }
+a { color: var(--accent); }
+.eyebrow { font: 500 0.78rem/1.4 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.biblio { display: grid; grid-template-columns: max-content 1fr; gap: 4px 18px; margin: 1.4rem 0 0;
+  font-size: 0.86rem; color: var(--muted); }
+.biblio dt { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.04em; padding-top: 2px; }
+.biblio dd { margin: 0; color: var(--fg); }
+.tag { display: inline-block; font: 500 0.7rem/1.6 var(--f-mono); padding: 0 6px; border-radius: 3px;
+  border: 1px solid var(--line); color: var(--muted); vertical-align: 1px; margin-left: 4px; white-space: nowrap; }
+.tag.fact { border-color: var(--accent); color: var(--accent); }
+.tag.est { border-color: var(--warm); color: var(--warm); }
+
+.summary { margin-top: 2rem; background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+  padding: 20px 22px; display: grid; gap: 14px; }
+.summary h2 { margin: 0; padding: 0; border: 0; font-size: 1.05rem; }
+.summary ol { margin: 0; padding-left: 1.3rem; display: grid; gap: 10px; }
+.summary li::marker { font-family: var(--f-mono); color: var(--accent); }
+.summary strong { font-weight: 600; }
+
+figure { margin: 1.4rem 0; }
+figcaption { font-size: 0.84rem; color: var(--muted); margin-top: 8px; max-width: 46rem; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* 연도별 막대 */
+.bars { display: grid; grid-template-columns: repeat(10, minmax(28px, 1fr)); gap: 8px; height: 220px;
+  align-items: end; padding: 8px 0 0; border-bottom: 1px solid var(--line); min-width: 420px; }
+.col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; position: relative; }
+.col .stack { display: flex; flex-direction: column; border-radius: 3px 3px 0 0; overflow: hidden; gap: 2px; }
+.col .seg { display: block; min-height: 0; }
+.seg.sam { background: var(--accent); }
+.seg.oth { background: var(--other); }
+.col.trunc .stack { opacity: 0.55; }
+.col .tot { font: 500 0.78rem/1 var(--f-mono); text-align: center; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.col .yr { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font: 0.74rem var(--f-mono); color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 30px; font-size: 0.82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+/* 기업별 가로 막대 */
+.hbars { display: grid; gap: 5px; max-width: 40rem; }
+.hrow { display: grid; grid-template-columns: 6.5rem 1fr 2.6rem; gap: 10px; align-items: center; font-size: 0.86rem; }
+.htrack { height: 12px; background: color-mix(in oklab, var(--line) 45%, transparent); border-radius: 2px; }
+.htrack i { display: block; height: 100%; background: var(--other); border-radius: 2px; }
+.hrow.focal .htrack i { background: var(--accent); }
+.hrow.focal .hl, .hrow.focal .hv { font-weight: 600; color: var(--accent-ink); }
+.hv { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* 표 */
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; background: var(--surface); }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+thead th { font: 500 0.74rem/1.4 var(--f-mono); letter-spacing: 0.03em; color: var(--muted); background: var(--bg);
+  border-bottom: 1px solid var(--fg); white-space: nowrap; }
+tbody th { font-weight: 500; min-width: 7.5rem; }
+table.rta-t { min-width: 52rem; }
+table.rta-t tbody th { white-space: nowrap; min-width: 5.5rem; }
+table.rta-t thead th { white-space: normal; min-width: 4.6rem; line-height: 1.35; }
+th small, td small { display: block; font-size: 0.74rem; line-height: 1.4; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.up { color: var(--accent-ink); font-weight: 500; }
+.down { color: var(--muted); }
+td.heat { font-family: var(--f-mono); text-align: center; font-variant-numeric: tabular-nums;
+  background: color-mix(in oklab, var(--accent) calc(var(--v) * 1%), var(--surface)); }
+td.heat small { color: inherit; opacity: 0.75; }
+td.rta { text-align: center; font-family: var(--f-mono); font-variant-numeric: tabular-nums; min-width: 4.2rem; }
+td.rta.pos { background: color-mix(in oklab, var(--accent) calc(var(--t) * 1%), var(--surface)); }
+td.rta.neg { background: color-mix(in oklab, var(--warm) calc(var(--t) * 0.6%), var(--surface)); }
+td.rta.none { color: var(--muted); }
+td.rta small { color: inherit; opacity: 0.7; }
+tr.focal th, tr.focal td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+tr.focal th { color: var(--accent-ink); }
+.rule { min-width: 22rem; }
+.ipc { font-family: var(--f-mono); font-size: 0.82rem; white-space: nowrap; }
+.rule small { display: inline; margin: 0 2px 0 4px; }
+.rule b { color: var(--accent); font-weight: 600; margin: 0 4px; }
+.pill { display: inline-block; font-size: 0.74rem; padding: 0 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--ok); } .pill.lapsed { color: var(--lapsed); } .pill.wd { color: var(--wd); }
+
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 14px; margin: 1.2rem 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.panel h3 { margin: 0 0 6px; font-size: 0.98rem; }
+.panel p { margin: 4px 0; font-size: 0.9rem; }
+.kv { font-family: var(--f-mono); font-size: 1.3rem; color: var(--accent-ink); }
+ul.tight { padding-left: 1.2rem; margin: 0.6rem 0; display: grid; gap: 6px; }
+.note { font-size: 0.86rem; color: var(--muted); border-left: 2px solid var(--line); padding-left: 12px; }
+footer { margin-top: 3.5rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 1rem; }
+footer ol { padding-left: 1.2rem; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 520px) { .hrow { grid-template-columns: 5.4rem 1fr 2.2rem; } body { font-size: 15px; } }
+</style>
+
+<div class="wrap">
+<header class="prose">
+  <div class="eyebrow">특허 기술동향 실무보고서 · 2026. 10</div>
+  <h1>DB손해보험 특허 기술동향</h1>
+  <p>국내 보험사 13곳의 특허 출원(2016–2025)을 Suh &amp; Sohn(2015)의 기술융합 분석 틀로 정리하고, DB손해보험 출원 11건의 위치를 진단합니다.</p>
+  <dl class="biblio">
+    <dt>자료</dt><dd>KIPRIS 특허 출원, 출원일 2016-01-01 ~ 2025-12-31, 추출일 2026-10-15, 법적 상태 무관</dd>
+    <dt>대상</dt><dd>손보 8곳·생보 5곳, 중복 제거 {{N_TOTAL}}건 (DB손해보험 11건)</dd>
+    <dt>방법</dt><dd>텍스트 군집(log·entropy 가중, SVD, EM) → 기간별 비중 → 관심분야 IPC 연관규칙 → 기업별 RTA</dd>
+    <dt>표기</dt><dd><span class="tag fact">사실</span> 데이터에서 직접 계산 <span class="tag est">추정</span> 분석자 해석·판단</dd>
+  </dl>
+</header>
+
+<section class="summary prose" aria-labelledby="sum">
+  <h2 id="sum">요약</h2>
+  <ol>
+    <li><strong>보험업계 특허는 규모가 작고 삼성 두 회사에 집중되어 있습니다.</strong> 10년간 {{N_TOTAL}}건 중 {{N_SAM}}건({{SAM_PCT}}%)에 삼성생명이나 삼성화재가 출원인으로 들어 있습니다. <span class="tag fact">사실</span></li>
+    <li><strong>가장 빠르게 커진 분야는 자동차 사고·보험료이고, 그 핵심 융합 패턴에 DB손해보험이 들어 있습니다.</strong> 영상인식(G06V)과 보험 업무(G06Q 40/50)가 결합된 2023–25년 패턴은 삼성화재 3건과 DB손해보험 2건이 만듭니다. 두 회사 모두 {{DB_C06}}년에 이 분야에 처음 출원했습니다. <span class="tag fact">사실</span></li>
+    <li><strong>DB손해보험은 손보사 중 출원 3위지만 건수는 11건이고, 2019–22년에는 출원이 없습니다.</strong> 업계 성장 분야 중 텔레매틱스, 인수심사 자동화, AI 예측 모델에는 최근 출원이 없거나 적습니다. 이 공백을 메울지 판단하는 것이 다음 과제입니다. <span class="tag est">추정</span></li>
+  </ol>
+</section>
+
+<main>
+<section class="prose">
+<h2>1. 업계 출원 구조</h2>
+<p>연도별 출원은 2016–19년 {{P1N}}건, 2020–22년 {{P2N}}건, 2023–25년 {{P3N}}건입니다. 2023년 이후 증가는 삼성화재와 롯데손해보험이 이끌었습니다. 2025년 막대가 옅은 것은 출원 후 18개월이 지나지 않아 아직 공개되지 않은 출원이 있기 때문입니다(특허법 제64조). 예를 들어 삼성화재의 2025년 출원은 보도로는 31건이지만 이 자료에서는 13건만 보입니다.<span class="tag fact">사실</span></p>
+</section>
+<figure>
+  <div class="scroll"><div class="bars">{{BARS}}</div></div>
+  <div class="legend"><span><i style="background:var(--accent)"></i>삼성생명·삼성화재 출원 포함</span><span><i style="background:var(--other)"></i>그 외 11개사</span><span>2025년은 미공개분 때문에 과소 집계</span></div>
+  <figcaption>그림 1. 연도별 특허 출원 건수(중복 제거, 출원일 기준)</figcaption>
+</figure>
+
+<figure>
+  <div class="hbars">{{FIRM_ROWS}}</div>
+  <figcaption>그림 2. 기업별 출원 건수. 공동출원은 참여한 각 회사에 1건씩 셌습니다(삼성 금융계열 4개사 공동출원 22건 포함). 흥국화재는 검색 결과 0건입니다.</figcaption>
+</figure>
+<p class="note prose">현대해상 3건, KB손해보험 2건, 메리츠화재 1건, 흥국화재 0건은 회사 규모에 비해 적습니다. 실제로 출원이 적은 것인지 검색에서 빠진 것인지 확인하지 못했습니다. 출원인코드 검색 결과와 대조가 필요합니다.</p>
+
+<section class="prose">
+<h2>2. 기술군집 추세</h2>
+<p>출원 {{N_TOTAL}}건의 제목과 요약을 9개 기술군집으로 나눴습니다. 원 논문의 Table II에 해당하며, 표는 2016–19년 대비 2023–25년 비중 증가 폭 순서입니다. 군집 이름은 대표어와 출원 내용을 보고 분석자가 붙였습니다.<span class="tag est">추정</span></p>
+</section>
+<figure>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">기술군집</th><th scope="col">2016–19 (%)</th><th scope="col">2020–22 (%)</th><th scope="col">2023–25 (%)</th><th scope="col">증감 %p</th><th scope="col">최다 출원사</th></tr></thead>
+    <tbody>{{CLUSTER_ROWS}}</tbody>
+  </table></div>
+  <figcaption>표 1. 기간별 기술군집 비중. 칸 아래 숫자는 출원 건수입니다. 대리점·영업관리(삼성생명 82%)와 고지·상병 인수심사(삼성화재 100%)는 한 회사가 대부분이라, 업계 공통 흐름이라기보다 그 회사의 포트폴리오일 수 있습니다.</figcaption>
+</figure>
+
+<section class="prose">
+<h2>3. 기술융합 패턴</h2>
+<p>원 논문 기준(confidence 60% 초과, lift 1 초과, 규칙당 IPC 최대 4개)으로 관심분야 4곳에서 규칙 {{N_RULES}}개를 얻었습니다. 같은 특허 묶음에서 나온 규칙은 하나로 합쳤고, 3건 이상의 특허가 뒷받침하는 규칙은 {{N_RULES3}}개입니다. 대부분은 보험 업무 코드(G06Q) 사이의 결합이라 lift가 1.0–1.4에 그칩니다. 아래는 이질적인 기술이 결합된 대표 규칙입니다.<span class="tag fact">사실</span></p>
+</section>
+<figure>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">분야 · 기간</th><th scope="col">규칙 (조건 → 결과)</th><th scope="col">건수</th><th scope="col">conf.</th><th scope="col">lift</th><th scope="col">뒷받침 출원사</th></tr></thead>
+    <tbody>{{RULE_ROWS}}</tbody>
+  </table></div>
+  <figcaption>표 2. 대표 융합 규칙. 강조한 행은 DB손해보험 특허가 포함된 규칙입니다. '뒷받침 출원사'는 해당 규칙의 IPC를 모두 가진 출원의 회사별 건수입니다.</figcaption>
+</figure>
+<div class="prose">
+<ul class="tight">
+  <li><strong>자동차 사고 영상 AI:</strong> 영상인식과 보험 업무의 결합이 2023–25년 가장 뚜렷한 융합입니다. DB손해보험의 블랙박스 AI 과실판정 특허 2건이 여기에 속합니다.<span class="tag fact">사실</span></li>
+  <li><strong>텔레매틱스:</strong> 무선 위치 서비스와 차량 운행기록의 결합은 한화손해보험과 삼성화재가 출원했습니다. DB손해보험은 2016년 운전습관 연계(UBI) 보험료율 특허 이후 이 분야 출원이 없습니다.<span class="tag fact">사실</span></li>
+  <li><strong>건강·의료 데이터:</strong> 2020–22년 AI 예측 모델 분야에서 신경망과 환자 데이터의 결합이 나타났습니다.<span class="tag fact">사실</span></li>
+</ul>
+</div>
+
+<section class="prose">
+<h2>4. DB손해보험의 위치</h2>
+<p>RTA(현시기술우위)는 해당 군집에서 그 회사의 출원 비중을 업계 비중으로 나눈 값입니다. 1을 넘으면 업계 평균보다 그 분야에 상대적으로 집중했다는 뜻입니다. 출원 9건 이상인 회사만 표시했고, 칸 아래 숫자는 출원 건수입니다.</p>
+</section>
+<figure>
+  <div class="scroll"><table class="rta-t">
+    <thead><tr><th scope="col">기업</th>{{RTA_HEAD}}</tr></thead>
+    <tbody>{{RTA_ROWS}}</tbody>
+  </table></div>
+  <figcaption>표 3. 기업 × 기술군집 RTA. 파랑은 1 초과(상대 특화), 주황은 1 미만, –는 출원 없음. DB손해보험은 군집별 출원이 1–4건이라 1건 차이로 RTA가 크게 바뀝니다.</figcaption>
+</figure>
+
+<div class="cols2">
+  <div class="panel"><h3>2016–18년: 탐색과 정리</h3>
+    <p class="kv">{{EARLY_N}}건 중 {{EARLY_KEEP}}건 유지</p>
+    <p>기구 배치, 인쇄물 견적, 현장지원 챗봇처럼 보험과 거리가 있는 출원이 섞여 있었고, 이런 특허는 등록료 미납으로 소멸하거나 취하되었습니다.<span class="tag fact">사실</span></p></div>
+  <div class="panel"><h3>2023–25년: 핵심 업무와 AI</h3>
+    <p class="kv">{{LATE_N}}건 중 {{LATE_KEEP}}건 유지</p>
+    <p>인수심사(AI 비서), 보상(블랙박스 AI 과실판정), 판매(모바일 화면공유 청약)로 보험 가치사슬의 핵심 업무에만 출원했습니다.<span class="tag fact">사실</span></p></div>
+</div>
+
+<figure>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">출원연도</th><th scope="col">발명(요지)</th><th scope="col">업무영역</th><th scope="col">기술요소</th><th scope="col">상태</th><th scope="col">배정 군집</th></tr></thead>
+    <tbody>{{DB_ROWS}}</tbody>
+  </table></div>
+  <figcaption>표 4. DB손해보험 출원 11건 전수. 업무영역·기술요소는 분석자가 직접 분류했습니다. 블랙박스 AI 과실판정 2건은 같은 날 출원된 같은 제목의 특허라 발명 기준으로는 10건입니다. 2017–18년 비보험 특허 3건의 배정 군집은 내용과 맞지 않으며 군집화 노이즈로 봅니다.</figcaption>
+</figure>
+
+<section class="prose">
+<h2>5. 시사점</h2>
+<p>아래는 위 결과를 바탕으로 한 분석자의 제안입니다. 특허는 연구개발의 일부만 보여주므로, 실행 전에 사내 추진 현황과 맞춰 봐야 합니다.<span class="tag est">추정</span></p>
+<ul class="tight">
+  <li><strong>강점 분야 굳히기:</strong> 자동차 사고 영상 AI는 가장 빠르게 커진 분야이고, DB손해보험이 삼성화재와 같은 해(2024년)에 진입해 핵심 융합 규칙을 함께 만들고 있습니다. 개량 발명과 후속 출원으로 특허 포트폴리오를 두껍게 만들 가치가 있습니다.</li>
+  <li><strong>텔레매틱스 재점검:</strong> 자동차보험 비중이 큰 손보사인데도 2016년 이후 관련 출원이 없습니다. 운전습관 연계 상품과 사고 감지 서비스를 실제로 운영하고 있다면 권리화 여부를 검토할 만합니다.</li>
+  <li><strong>인수심사 자동화:</strong> 고지·상병 판단과 AI 예측 모델은 삼성화재가 주도하며 성장 중입니다. DB손해보험은 2023년 AI 비서 1건뿐이라, 장기보험 인수 자동화 쪽에 출원 여지가 있는지 확인이 필요합니다.</li>
+  <li><strong>특허 관리 기준 마련:</strong> 2019–22년 출원 공백과 초기 비핵심 특허 소멸을 보면, 출원 대상과 유지 여부를 정하는 내부 기준이 있는지 점검할 만합니다.</li>
+</ul>
+
+<h2>6. 한계와 확인할 사항</h2>
+<ul class="tight">
+  <li><strong>표본:</strong> {{N_TOTAL}}건은 원 논문(삼성전자 USPTO 수만 건)보다 훨씬 적습니다. 결과는 통계적 검증이 아니라 원 논문 틀을 빌린 기술(記述) 분석입니다.</li>
+  <li><strong>원 논문과 다르게 적용한 부분:</strong>
+    <ul class="tight">
+      <li>SVD를 25차원이 아닌 8차원으로 줄였습니다. 25차원에서는 군집 안정성(ARI)이 0.2–0.55였고, 8차원에서는 0.78–0.90입니다.</li>
+      <li>기간별로 따로 군집하지 않고 전체를 한 번에 군집했습니다.</li>
+      <li>분석 텍스트로 제목 대신 제목과 요약을 썼습니다.</li>
+      <li>특허 명세서 상투어와 출원 회사별 문체 표현을 불용어로 뺐습니다.</li>
+    </ul></li>
+  <li><strong>군집과 출원 회사:</strong> 일부 군집은 한 회사 출원이 대부분이라 기술 분야와 출원 회사가 섞여 있을 수 있습니다.</li>
+  <li><strong>데이터:</strong> DB손해보험 2019–22년 공백, 일부 손보사의 적은 출원 건수, 그룹 IT 계열사 명의 출원 가능성은 확인하지 못했습니다.</li>
+  <li><strong>분류:</strong> 군집 해석 이름과 DB손해보험 11건의 업무영역 분류는 분석자 1인의 판단입니다.</li>
+</ul>
+</section>
+</main>
+
+<footer>
+  <ol>
+    <li>Suh, J. &amp; Sohn, S. Y. (2015). Analyzing technological convergence trends in a business ecosystem. <i>Industrial Management &amp; Data Systems</i>, 115(4), 718–739. <a href="https://doi.org/10.1108/IMDS-10-2014-0310">doi.org/10.1108/IMDS-10-2014-0310</a></li>
+    <li>특허청 KIPRIS 특허 검색 결과(2026-10-15 추출).</li>
+    <li>헤럴드경제(2026.1), 삼성화재 2년 연속 보험업계 특허 등록·출원 1위. <a href="https://www.heraldk.com/article/2026010615195302256">원문</a></li>
+    <li>파이낸셜뉴스(2025.4), DB손보 AI 자동 과실비율 판정 특허. <a href="https://www.fnnews.com/news/202504230927567531">원문</a></li>
+  </ol>
+  <p>분석 코드: dbins_patent (analyze.py, industry.py). 군집 설정 --svd 8 --k 9, 연관규칙은 원 논문 기준.</p>
+</footer>
+</div>
