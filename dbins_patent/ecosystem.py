@@ -22,6 +22,8 @@ from industry import (FIRMS, FOCAL, assoc_rules, cluster, descriptive_terms, fig
                       tokenize)
 from sklearn.metrics import adjusted_rand_score
 
+import industry
+
 CORE_IPC = "G06Q 40/08"  # 보험(Insurance). --broad면 제목·요약에 '보험'이 있는 출원도 포함
 ENTRY_MIN = 3            # 군집의 '생태계 등장 연도' = 누적 출원이 이 건수에 도달한 해
 TOP_APPLICANTS = 30      # 유사도 비교 대상 상위 출원인 수
@@ -37,14 +39,16 @@ ACTOR_RULES = [
     ("모빌리티·제조", r"자동차|모비스|기아|만도|르노|쌍용|타이어|전자"),
     ("해외 기업", r"\b(Inc|LLC|Corp|Corporation|Ltd|Limited|GmbH|AG|S\.A|B\.V|Co\.)\b"),
 ]
-ACTOR_ORDER = ["보험사", "IT·플랫폼", "모빌리티·제조", "금융(은행·카드·증권)", "기타 기업", "대학·연구기관",
-               "유관기관·공공", "해외 기업", "개인"]
+ACTOR_ORDER = ["보험사", "인슈어테크", "헬스케어·의료IT", "IT·플랫폼", "모빌리티·제조", "금융(은행·카드·증권)",
+               "대학·연구기관", "해외 기업", "기타 기업", "유관기관·공공", "개인"]
+# 인슈어테크·헬스케어·의료IT는 이름 규칙으로 판별할 수 없어 --actors CSV로만 지정된다(출원 내용 기준 분석자 판단).
+# 9번째(기타 기업) 이후는 회색으로 접는다.
 # 기본 분류 팔레트(검증된 순서 그대로, 9번째 이후는 회색으로 접음)
 PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948", "#b4b2a9"]
 
 
 def split_applicants(s):
-    return [p.strip() for p in re.split(r"[|;,]", str(s)) if p.strip()]
+    return [p.strip() for p in re.split(r"[|;]", str(s)) if p.strip()]
 
 
 def canon(name):
@@ -135,8 +139,12 @@ def main():
     ap.add_argument("--actors", help="출원인 유형 수작업 지정 CSV(열: applicant,type)")
     ap.add_argument("--merge", help="군집 병합표 CSV(열: cluster,field)")
     ap.add_argument("--k", type=int, default=0)
+    ap.add_argument("--svd", type=int, default=industry.SVD_DIM, help="SVD 차원(원 논문 25)")
+    ap.add_argument("--kmax", type=int, default=industry.MAX_K)
+    ap.add_argument("--min-count", type=int, default=industry.MIN_COUNT, help="연관규칙 최소 동시출현")
     ap.add_argument("--focus", type=int, default=4)
     a = ap.parse_args()
+    industry.SVD_DIM, industry.MAX_K, industry.MIN_COUNT = a.svd, a.kmax, a.min_count
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     override = pd.read_csv(a.actors).set_index("applicant")["type"].to_dict() if a.actors else {}

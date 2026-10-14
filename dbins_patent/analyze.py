@@ -81,7 +81,7 @@ def prepare(df, asof):
                         | df["status"].astype(str).str.contains("등록"))
     # 공동출원: 출원인 문자열을 구분자로 나눠 DB/동부 외 주체가 있는지 확인
     df["co_applied"] = df["applicant"].astype(str).map(
-        lambda s: any(p.strip() and not any(n in p for n in FOCAL_NAMES) for p in re.split(r"[|;,/]", s)))
+        lambda s: any(p.strip() and not any(n in p for n in FOCAL_NAMES) for p in re.split(r"[|;]", s)))
     cutoff = pd.Timestamp(asof) - pd.DateOffset(months=DISCLOSURE_LAG_MONTHS)
     df["maybe_truncated"] = df["app_date"] > cutoff
     text = (df["title"].astype(str) + " " + df["abstract"].astype(str)).str.replace(r"\s+", " ", regex=True)
