@@ -24,7 +24,7 @@ from taxonomy import TECHNOLOGY, VALUE_CHAIN
 
 # 기간 구분: 2년 단위(원 논문)는 구간당 표본이 너무 작아 3구간으로 묶는다
 PERIODS = [("P1 2016–19", 2016, 2019), ("P2 2020–22", 2020, 2022), ("P3 2023–25", 2023, 2025)]
-FOCAL_NAMES = ["DB손해보험", "동부화재"]  # 2017년 사명 변경 전후 모두 포함
+FOCAL_NAMES = ["DB손해보험", "디비손해보험", "동부화재"]  # 2017년 사명 변경 전후 모두 포함
 DISCLOSURE_LAG_MONTHS = 18  # 특허법 제64조: 출원 후 1년 6개월 경과 시 공개
 
 COLUMN_ALIASES = {
