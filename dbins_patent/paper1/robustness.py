@@ -128,7 +128,8 @@ def leader_proxy(df, draws, ks=(8, 10, 12, 14, 16), seeds=range(5), dim=25):
 
 def grant_logit(df, clusters):
     import statsmodels.formula.api as smf
-    d = df.merge(clusters, on="app_no", how="left")
+    d = df.assign(app_no=df["app_no"].astype(str)).merge(
+        clusters.assign(app_no=clusters["app_no"].astype(str)), on="app_no", how="left")
     d = d[d["year"] <= 2022].copy()
     st = d["status"].astype(str).str.replace(r"\s*\(.*", "", regex=True)
     d = d[st.isin(["등록", "소멸", "거절", "취하", "포기"])].copy()
@@ -186,7 +187,16 @@ def main():
     df = prep(a.patents, a.actors)
     clusters = pd.read_excel(a.eco_tables, sheet_name="00_원자료", dtype=str)[["app_no", "cluster"]]
 
-    det, summ = leader_proxy(df, a.draws)
+    cache = out / "leader_proxy_detail.csv"
+    if cache.exists():  # 오래 걸리는 단계라 결과를 저장해 두고 재사용
+        det = pd.read_csv(cache)
+        agg = {c: "median" for c in det.columns if c not in ("leader", "k", "seed")}
+        summ = det.groupby("leader").agg(agg)
+        for c in [c for c in det.columns if c.startswith("p_")]:
+            summ[c.replace("p_", "share_p<.05 ")] = det.groupby("leader")[c].apply(lambda s: (s < 0.05).mean())
+    else:
+        det, summ = leader_proxy(df, a.draws)
+        det.to_csv(cache, index=False)
     logits, rates = grant_logit(df, clusters)
     rules = rule_significance(a.eco_tables)
 
