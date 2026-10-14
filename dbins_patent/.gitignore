@@ -2,3 +2,5 @@ out*/
 *.xlsx
 __pycache__/
 merge_dummy.csv
+merge_eco_dummy.csv
+actors_dummy.csv

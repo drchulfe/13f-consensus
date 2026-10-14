@@ -13,6 +13,8 @@ from collections import Counter
 from pathlib import Path
 
 import koreanize_matplotlib  # noqa: F401  (한글 폰트 등록)
+import matplotlib
+matplotlib.rcParams["axes.unicode_minus"] = False  # 나눔고딕에 U+2212 글리프 없음
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np

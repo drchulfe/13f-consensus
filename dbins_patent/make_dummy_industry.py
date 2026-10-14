@@ -33,18 +33,24 @@ PROFILE = {  # 기업별 토픽 가중치, 연간 기본 출원량
     "한화생명보험주식회사": ({"health": 3, "chat": 3, "sales": 3, "uw_data": 2, "fraud": 1, "claim_img": 1, "telem": 0}, 10),
     "교보생명보험주식회사": ({"chat": 3, "uw_data": 3, "health": 2, "sales": 2, "fraud": 1, "claim_img": 1, "telem": 0}, 7),
 }
-rows, i = [], 0
-for name, (w, base) in PROFILE.items():
-    for y in range(2016, 2026):
-        growth = 0.5 + (y - 2016) * 0.12
-        for _ in range(max(0, round(random.gauss(base * growth, 2)))):
-            t = random.choices(list(w), weights=list(w.values()))[0]
-            title = random.choice(TOPICS[t][0])
-            ipc = "|".join(random.sample(TOPICS[t][1].split("|")[1:], k=random.randint(1, 2)) + ["G06Q 40/08"])
-            app = name if not (name.startswith("DB") and y < 2018) else "동부화재해상보험주식회사"
-            rows.append({"출원번호": f"10-{y}-{i:07d}", "출원일자": f"{y}.{random.randint(1,12):02d}.{random.randint(1,28):02d}",
-                         "발명의명칭": title + " 시스템 및 방법", "요약": f"본 발명은 {title}에 관한 것이다.",
-                         "IPC분류": ipc, "출원인": app, "등록번호": ""})
-            i += 1
-pd.DataFrame(rows).to_excel("dummy_industry.xlsx", index=False)
-print("dummy rows:", len(rows))
+def main():
+    random.seed(1)
+    rows, i = [], 0
+    for name, (w, base) in PROFILE.items():
+        for y in range(2016, 2026):
+            growth = 0.5 + (y - 2016) * 0.12
+            for _ in range(max(0, round(random.gauss(base * growth, 2)))):
+                t = random.choices(list(w), weights=list(w.values()))[0]
+                title = random.choice(TOPICS[t][0])
+                ipc = "|".join(random.sample(TOPICS[t][1].split("|")[1:], k=random.randint(1, 2)) + ["G06Q 40/08"])
+                app = name if not (name.startswith("DB") and y < 2018) else "동부화재해상보험주식회사"
+                rows.append({"출원번호": f"10-{y}-{i:07d}", "출원일자": f"{y}.{random.randint(1,12):02d}.{random.randint(1,28):02d}",
+                             "발명의명칭": title + " 시스템 및 방법", "요약": f"본 발명은 {title}에 관한 것이다.",
+                             "IPC분류": ipc, "출원인": app, "등록번호": ""})
+                i += 1
+    pd.DataFrame(rows).to_excel("dummy_industry.xlsx", index=False)
+    print("dummy rows:", len(rows))
+
+
+if __name__ == "__main__":
+    main()
