@@ -133,15 +133,20 @@ def grant_logit(df, clusters):
     d = d[d["year"] <= 2022].copy()
     st = d["status"].astype(str).str.replace(r"\s*\(.*", "", regex=True)
     d = d[st.isin(["등록", "소멸", "거절", "취하", "포기"])].copy()
+    if d.empty:  # 행정처리상태 열이 없거나 심사 종결 출원이 없으면 회귀를 건너뜀
+        print("⚠ 등록 회귀 생략: 심사 종결(등록·소멸·거절·취하·포기) 출원이 없습니다. '행정처리상태' 열을 확인하세요.")
+        return {}, pd.DataFrame(columns=["count", "mean"])
     d["granted"] = st.loc[d.index].isin(["등록", "소멸"]).astype(int)
     d["n_ipc"] = d["ipc_groups"].map(len)
     d["claim_len"] = d["claim"].astype(str).str.len() / 100
     d["ptype"] = d["ptype"].replace({"유관기관·공공": "기타 기업", "해외 기업": "기타 기업"})
     out = {}
+    ref = "기타 기업" if "기타 기업" in set(d["ptype"]) else d["ptype"].value_counts().index[0]  # 기준 집단
+    T = f"C(ptype, Treatment('{ref}'))"
     for name, f in {
-        "M1 유형만": "granted ~ C(ptype, Treatment('기타 기업'))",
-        "M2 +연도·군집 FE": "granted ~ C(ptype, Treatment('기타 기업')) + C(year) + C(cluster)",
-        "M3 +IPC수·청구항길이": "granted ~ C(ptype, Treatment('기타 기업')) + C(year) + C(cluster) + n_ipc + claim_len",
+        "M1 유형만": f"granted ~ {T}",
+        "M2 +연도·군집 FE": f"granted ~ {T} + C(year) + C(cluster)",
+        "M3 +IPC수·청구항길이": f"granted ~ {T} + C(year) + C(cluster) + n_ipc + claim_len",
     }.items():
         m = smf.logit(f, data=d).fit(disp=0, cov_type="HC1")
         t = pd.DataFrame({"coef": m.params, "OR": np.exp(m.params), "se": m.bse, "p": m.pvalues})
