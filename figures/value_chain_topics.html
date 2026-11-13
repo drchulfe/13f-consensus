@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1d2433;--sub:#5b6577;--line:#d7dce5;--mot:#2f5d9e;--motbg:#eaf1fb;--con:#c2571a;--conbg:#fdf0e7;--fin:#6b7280;--finbg:#f1f2f4;--chev:#24324a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--ink);background:#fff;width:1800px;padding:40px 44px 36px}
+h1{font-size:30px;font-weight:900;letter-spacing:-.5px}
+.lead{font-size:16px;color:var(--sub);margin-top:6px}
+.legend{display:flex;gap:22px;margin:18px 0 22px;font-size:14.5px;color:var(--sub);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:16px;height:16px;border-radius:4px;display:inline-block}
+.chain{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:14px}
+.chev{background:var(--chev);color:#fff;height:66px;display:flex;flex-direction:column;justify-content:center;padding-left:42px;
+ clip-path:polygon(0 0,calc(100% - 26px) 0,100% 50%,calc(100% - 26px) 100%,0 100%,26px 50%);margin-right:-12px}
+.chev:last-child{margin-right:0}
+.chev:first-child{clip-path:polygon(0 0,calc(100% - 26px) 0,100% 50%,calc(100% - 26px) 100%,0 100%);padding-left:22px}
+.chev b{font-size:19px;font-weight:700}
+.chev small{font-size:12.5px;opacity:.75;margin-top:2px}
+.cols{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.col{display:flex;flex-direction:column;gap:12px}
+.card{border-radius:10px;padding:13px 14px 12px;border-left:6px solid;position:relative}
+.card.mot{background:var(--motbg);border-color:var(--mot)}
+.card.con{background:var(--conbg);border-color:var(--con)}
+.card.fin{background:var(--finbg);border-color:var(--fin)}
+.card.both{background:linear-gradient(90deg,var(--motbg),var(--conbg));border-image:linear-gradient(var(--mot),var(--con)) 1;border-radius:0 10px 10px 0}
+.id{font-size:12.5px;font-weight:700;letter-spacing:.3px}
+.mot .id{color:var(--mot)} .con .id{color:var(--con)} .fin .id{color:var(--fin)} .both .id{color:#7a4a6e}
+.t{font-size:16px;font-weight:700;line-height:1.35;margin:3px 0 7px}
+.row{font-size:13px;line-height:1.5;color:#3a4252}
+.row em{font-style:normal;font-weight:700;color:var(--sub);margin-right:5px}
+.rank{position:absolute;top:10px;right:10px;background:#111827;color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px}
+.dots{display:inline-flex;gap:3px;vertical-align:-1px}
+.dots i{width:9px;height:9px;border-radius:50%;background:#cfd5df;display:inline-block}
+.dots i.on{background:#2e8b57}
+.support{margin-top:18px;border:1.5px dashed #9aa4b5;border-radius:12px;padding:12px 16px 14px}
+.support .hd{font-size:15px;font-weight:700;color:var(--sub);margin-bottom:10px}
+.support .hd small{font-weight:400;margin-left:8px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.note{margin-top:16px;font-size:12.5px;color:var(--sub);line-height:1.6}
+.weak{font-size:12.5px;color:#8a5a00;background:#fff7e0;border-radius:6px;padding:3px 7px;margin-top:6px;display:inline-block}
+</style></head><body>
+<h1>보험사 가치사슬별 논문화 가능 주제 맵</h1>
+<div class="lead">기술경영(MOT) · 소비자경제 관점 &nbsp;|&nbsp; 단계 매칭 기준: DB손해보험 2025 사업보고서 조직 · 제도 시점은 2026.11 검색 확인분</div>
+<div class="legend">
+ <span><i class="sw" style="background:var(--mot)"></i>기술경영(MOT)</span>
+ <span><i class="sw" style="background:var(--con)"></i>소비자경제</span>
+ <span><i class="sw" style="background:linear-gradient(90deg,var(--mot),var(--con))"></i>MOT·소비자 복합</span>
+ <span><i class="sw" style="background:var(--fin)"></i>재무(관점 적합성 낮음)</span>
+ <span><span class="dots"><i class="on"></i><i class="on"></i><i></i></span>공개데이터 실현가능성</span>
+ <span><span class="rank" style="position:static">추천 1</span>우선순위</span>
+</div>
+
+<div class="chain">
+ <div class="chev"><b>① 상품개발·계리</b><small>장기상품 · 계리지원</small></div>
+ <div class="chev"><b>② 마케팅·판매</b><small>지역·법인·채널 20개 본부</small></div>
+ <div class="chev"><b>③ 언더라이팅·계약관리</b><small>장기·자동차·일반업무</small></div>
+ <div class="chev"><b>④ 보상</b><small>보상기획 · 자동차·장기보상</small></div>
+ <div class="chev"><b>⑤ 자산운용</b><small>자산운용 · 재무심사</small></div>
+</div>
+
+<div class="cols">
+ <div class="col">
+  <div class="card mot"><div class="id">1-1 · MOT</div><div class="t">배타적사용권과 상품혁신 모방 속도</div>
+   <div class="row"><em>식별</em>생존분석, 사용권 기간=처치강도</div>
+   <div class="row"><em>데이터</em>손보협회 사용권 공시 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+   <div class="weak">약점: 신청의 자기선택</div></div>
+  <div class="card con"><div class="id">1-2 · 소비자</div><div class="t">무·저해지 상품의 조기해지 손실과 이해도</div>
+   <div class="row"><em>식별</em>설문실험(설명 방식 처치)</div>
+   <div class="row"><em>데이터</em>자체 설문 + 업권 유지율 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+   <div class="weak">약점: 해지율 가이드라인 시점 미확인</div></div>
+ </div>
+
+ <div class="col">
+  <div class="card con"><span class="rank">추천 2</span><div class="id">2-1 · 소비자</div><div class="t">1200%룰 GA 확대(’26.7)와 승환·유지율·불완전판매</div>
+   <div class="row"><em>식별</em>DID: GA(처치) vs 전속(’21 기적용)</div>
+   <div class="row"><em>데이터</em>손보협회 채널별 공시, FISIS <span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+   <div class="weak">약점: 사후기간 짧음, ’27 분급제와 교란</div></div>
+  <div class="card both"><span class="rank">추천 3</span><div class="id">2-2 · MOT·소비자</div><div class="t">플랫폼 비교·추천(’24.1→2.0)과 가격분산·CM 잠식</div>
+   <div class="row"><em>식별</em>1.0→2.0 전환 시계열, 입점 시차</div>
+   <div class="row"><em>데이터</em>금융위 실적, 회사 CM 공시 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+   <div class="weak">약점: 요율 관리로 경쟁효과 식별 곤란</div></div>
+ </div>
+
+ <div class="col">
+  <div class="card mot"><div class="id">3-1 · MOT</div><div class="t">UBI 특약: 선택효과 vs 행동효과 분해</div>
+   <div class="row"><em>식별</em>가입 전후 패널, selection/incentive 분해</div>
+   <div class="row"><em>데이터</em>계약 미시자료 <span class="dots"><i class="on"></i><i></i><i></i></span></div>
+   <div class="weak">약점: 회사 협업 전제</div></div>
+  <div class="card con"><div class="id">3-2 · 소비자</div><div class="t">간편심사(유병자) 보험과 역선택</div>
+   <div class="row"><em>식별</em>Chiappori–Salanié 양의 상관 검정</div>
+   <div class="row"><em>데이터</em>한국의료패널 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+   <div class="weak">약점: 상품유형 식별 가능성 미확인</div></div>
+  <div class="card con"><div class="id">3-3 · 소비자</div><div class="t">갱신 가격최적화(price walking)의 공정성</div>
+   <div class="row"><em>식별</em>미스터리 쇼핑·실험, 英 FCA ’22 비교</div>
+   <div class="row"><em>데이터</em>공개자료 없음 <span class="dots"><i class="on"></i><i></i><i></i></span></div></div>
+ </div>
+
+ <div class="col">
+  <div class="card con"><span class="rank">추천 1</span><div class="id">4-1 · 소비자</div><div class="t">실손 청구 전산화(’24.10 병원 → ’25.10 의원·약국)와 청구·의료이용</div>
+   <div class="row"><em>식별</em>staggered DID, ITT 해석</div>
+   <div class="row"><em>데이터</em>한국의료패널, 협회 청구통계 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+   <div class="weak">약점: 연계 자기선택, 패널 공개 시차</div></div>
+  <div class="card mot"><div class="id">4-2 · MOT</div><div class="t">AI 사기탐지·자동심사와 지급기간·부지급률</div>
+   <div class="row"><em>식별</em>회사별 도입 시점 event study</div>
+   <div class="row"><em>데이터</em>협회 지급기간·부지급률 비교공시 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div>
+   <div class="weak">약점: 도입 시점 코딩 난이도</div></div>
+  <div class="card con"><div class="id">4-3 · 소비자</div><div class="t">경상환자 제도(’23.1 4주 진단서 → 8주 심의) 효과 감쇠</div>
+   <div class="row"><em>식별</em>4주·8주 경계 bunching / RD</div>
+   <div class="row"><em>데이터</em>금감원·심평원 집계 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div></div>
+ </div>
+
+ <div class="col">
+  <div class="card fin"><div class="id">5-1 · 재무(+소비자 연계)</div><div class="t">IFRS17·K-ICS 이후 자산·상품 포트폴리오 동시조정</div>
+   <div class="row"><em>식별</em>규제 노출도별 패널 DID</div>
+   <div class="row"><em>데이터</em>FISIS <span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+   <div class="weak">약점: MOT·소비자 저널 적합성 낮음</div></div>
+ </div>
+</div>
+
+<div class="support">
+ <div class="hd">지원활동<small>전략혁신 · IT지원 · 정보보호 · 준법감시 · 소비자보호 등 12개 본부</small></div>
+ <div class="sgrid">
+  <div class="card mot"><div class="id">S-1 · MOT</div><div class="t">디지털 전환·생성형 AI 투자와 사업비율·인당 생산성</div>
+   <div class="row"><em>식별</em>회사 패널, IT투자 proxy &nbsp;<em>데이터</em>FISIS, 지속가능경영보고서 <span class="dots"><i class="on"></i><i></i><i></i></span></div></div>
+  <div class="card con"><div class="id">S-2 · 소비자</div><div class="t">금융소비자보호법(’21.3)과 민원·불완전판매</div>
+   <div class="row"><em>식별</em>시행 전 위반강도=노출도 차분 &nbsp;<em>데이터</em>금감원 민원통계 <span class="dots"><i class="on"></i><i class="on"></i><i></i></span></div></div>
+ </div>
+</div>
+
+<div class="note">주: 가치사슬 틀은 Porter(1985)의 본원·지원활동 구분을 손해보험에 맞게 바꿔 적용했으며, 본부 매칭은 명칭 기반 추정. 제도 시점: 1200%룰 GA 확대 2026.7.1, 실손24 2단계 2025.10.25, 플랫폼 비교·추천 2024.1 개시(금융위원회·언론 보도 확인). 데이터 실현가능성 점수는 작성자 판단.</div>
+</body></html>
